@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Custom files to ignore
+src/utils/config.js
+BACKEND_FIXES.md
+SIGNALR_FIX_SUMMARY.md
