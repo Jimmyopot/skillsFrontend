@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // @ts-nocheck
 import { configureStore } from "@reduxjs/toolkit";
 import rootReducer from "./rootReducer";
