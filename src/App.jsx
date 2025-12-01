@@ -4,6 +4,7 @@ import IndexPage from "./pages/landingPage/IndexPage";
 import SignUpPage from "./pages/signUp/SignUpPage";
 import LoginPage from "./pages/login/LoginPage";
 import AdminPage from "./pages/admin/AdminPage.jsx";
+import AdminLogin from "./pages/adminLogin/AdminLogin.jsx";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import NotFoundPage from "./pages/notFound/NotFoundPage";
 import NoInternetPage from "./pages/noInternet/NoInternetPage";
@@ -14,6 +15,7 @@ import {
 } from "./pages/login/state/LoginActions";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { ProtectedRoute } from "./common/protected/ProtectedRoute";
+import { AdminProtectedRoute } from "./common/protected/AdminProtectedRoute";
 
 function App() {
   const dispatch = useDispatch();
@@ -41,7 +43,15 @@ if (loc.pathname === "/") {
         <Route path="/" element={<IndexPage />} />
         <Route path="/signUp" element={<SignUpPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/adminsOnly" element={<AdminPage />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route
+          path="/adminsOnly"
+          element={
+            <AdminProtectedRoute>
+              <AdminPage />
+            </AdminProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={

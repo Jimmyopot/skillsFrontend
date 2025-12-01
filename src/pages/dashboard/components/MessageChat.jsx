@@ -587,8 +587,8 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         {process.env.NODE_ENV === "development" && (
           <Paper sx={{ m: 1, p: 1, bgcolor: "grey.100" }}>
             <Typography variant="caption" display="block">
-              Debug: User ID: {myUserId} | Token:{" "}
-              {getToken() ? "Present" : "Missing"} | Connection:{" "}
+              {/* Debug: User ID: {myUserId} | Token:{" "}
+              {getToken() ? "Present" : "Missing"} | Connection:{" "} */}
               {connectionState} | Messages: {messages.length}
             </Typography>
           </Paper>

@@ -2,31 +2,30 @@ import { useState, useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import CardActions from "@mui/material/CardActions";
 import CardHeader from "@mui/material/CardHeader";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
-import Divider from "@mui/material/Divider";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import { Link, useNavigate } from "react-router-dom";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useSnackbar } from "../../../common/snackbar/SnackbarContext";
-import { login } from "../state/authSlice";
+import { useSnackbar } from "../../common/snackbar/SnackbarContext";
+import { adminLoginAction } from "./state/AdminLoginActions";
 
-export default function Login() {
+export default function AdminLogin() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
   const hasRedirected = useRef(false);
 
-  const { authLoading, user } = useSelector((state) => state.AuthReducer);
+  const { loading, admin } = useSelector((state) => state.AdminLoginReducer);
 
   // Local state
   const [showPassword, setShowPassword] = useState(false);
@@ -38,11 +37,11 @@ export default function Login() {
 
   // Redirect if already logged in - Only run once
   useEffect(() => {
-    if (user && !hasRedirected.current) {
+    if (admin && !hasRedirected.current) {
       hasRedirected.current = true;
-      navigate("/dashboard", { replace: true });
+      navigate("/adminsOnly", { replace: true });
     }
-  }, [user, navigate]);
+  }, [admin, navigate]);
 
   // Clear login error when user edits fields
   const handleEmailChange = (e) => {
@@ -91,32 +90,30 @@ export default function Login() {
 
     try {
       const res = await dispatch(
-        login({
+        adminLoginAction({
           email: email.trim(),
           password,
         })
       ).unwrap();
 
-      // Show success message but DON'T navigate yet
-      // Let the useEffect handle navigation after state updates
-      showSnackbar(res.message || "Login successful!", "success");
+      // Show success message
+      showSnackbar(res.message || "Admin login successful!", "success");
       
       // Navigation will happen automatically via useEffect
-      // This prevents the white flash
     } catch (error) {
-      console.error("Login failed:", error);
-      const errorMsg = error?.message || "Login failed. Please try again.";
+      console.error("Admin login failed:", error);
+      const errorMsg = error?.message || "Admin login failed. Please try again.";
 
-      // Handle 401 errors or invalid credentials with unified message
+      // Handle 401 errors or invalid credentials
       if (
         error?.status === 401 ||
-        errorMsg.toLowerCase().includes("invalid credentials") ||
+        errorMsg.toLowerCase().includes("invalid") ||
         errorMsg.toLowerCase().includes("password") ||
-        errorMsg.toLowerCase().includes("email")
+        errorMsg.toLowerCase().includes("email") ||
+        errorMsg.toLowerCase().includes("credentials")
       ) {
-        // Set unified credential error (not individual field errors)
-        setCredentialError("Invalid email or password");
-        showSnackbar("Invalid email or password", "error");
+        setCredentialError("Invalid admin email or password");
+        showSnackbar("Invalid admin credentials", "error");
       } else {
         // For other errors (network, server, etc.)
         setLoginError(errorMsg);
@@ -124,9 +121,6 @@ export default function Login() {
       }
     }
   };
-
-  // Remove the full-page loading spinner that causes layout shift
-  // Keep the form visible with just the button showing loading state
 
   return (
     <Box
@@ -146,6 +140,14 @@ export default function Login() {
         sx={{ width: "100%", maxWidth: 400, position: "relative", zIndex: 1 }}
       >
         <Box sx={{ textAlign: "center", mb: 4 }}>
+          <AdminPanelSettingsIcon 
+            sx={{ 
+              fontSize: 60, 
+              color: "primary.main",
+              mb: 2,
+              filter: "drop-shadow(0px 4px 6px rgba(0,0,0,0.3))"
+            }} 
+          />
           <Typography
             variant="h3"
             sx={{
@@ -153,12 +155,13 @@ export default function Login() {
               color: "primary.main",
               mb: 1,
               fontSize: 32,
+            //   textShadow: "0px 2px 4px rgba(0,0,0,0.3)"
             }}
           >
-            NipeNikupe
+            Admin Portal
           </Typography>
           <Typography sx={{ color: "text.secondary" }}>
-            Welcome back! Sign in to continue
+            Secure access for administrators only
           </Typography>
         </Box>
 
@@ -169,9 +172,8 @@ export default function Login() {
             background: "rgba(255,255,255,0.95)",
             border: "1px solid",
             borderColor: "divider",
-            // Prevent layout shift during loading
             transition: "opacity 0.2s ease-in-out",
-            opacity: authLoading ? 0.7 : 1,
+            opacity: loading ? 0.7 : 1,
           }}
         >
           <CardHeader
@@ -180,12 +182,12 @@ export default function Login() {
                 variant="h5"
                 sx={{ fontWeight: "bold", textAlign: "center" }}
               >
-                Sign In
+                Admin Sign In
               </Typography>
             }
             subheader={
               <Typography sx={{ textAlign: "center", color: "text.secondary" }}>
-                Enter your credentials to access your account
+                Enter your admin credentials to continue
               </Typography>
             }
             sx={{ pb: 0 }}
@@ -198,10 +200,10 @@ export default function Login() {
             >
               {/* Email Field */}
               <TextField
-                id="email"
-                label="Email Address"
+                id="admin-email"
+                label="Admin Email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="admin@example.com"
                 value={email}
                 onChange={handleEmailChange}
                 required
@@ -210,7 +212,7 @@ export default function Login() {
                 size="medium"
                 error={!!formErrors.email}
                 helperText={formErrors.email}
-                disabled={authLoading}
+                disabled={loading}
                 sx={{
                   backgroundColor: "background.paper",
                   "& .MuiOutlinedInput-root": { borderRadius: 2 },
@@ -220,10 +222,10 @@ export default function Login() {
 
               {/* Password Field */}
               <TextField
-                id="password"
-                label="Password"
+                id="admin-password"
+                label="Admin Password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
+                placeholder="Enter your admin password"
                 value={password}
                 onChange={handlePasswordChange}
                 required
@@ -232,7 +234,7 @@ export default function Login() {
                 size="medium"
                 error={!!formErrors.password}
                 helperText={formErrors.password}
-                disabled={authLoading}
+                disabled={loading}
                 sx={{
                   backgroundColor: "background.paper",
                   "& .MuiOutlinedInput-root": { borderRadius: 2 },
@@ -248,7 +250,7 @@ export default function Login() {
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
                         size="small"
-                        disabled={authLoading}
+                        disabled={loading}
                         sx={{
                           color: "text.secondary",
                           "&:hover": { color: "text.primary" },
@@ -264,22 +266,6 @@ export default function Login() {
                   ),
                 }}
               />
-
-              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: -1 }}>
-                <Link to="/forgot-password" style={{ textDecoration: "none" }}>
-                  <Typography
-                    sx={{
-                      fontSize: 14,
-                      color: "primary.main",
-                      textDecoration: "none",
-                      transition: "color 0.2s",
-                      "&:hover": { color: "primary.dark" },
-                    }}
-                  >
-                    Forgot password?
-                  </Typography>
-                </Link>
-              </Box>
 
               {/* Unified credential error message */}
               {credentialError && (
@@ -302,7 +288,7 @@ export default function Login() {
                 color="primary"
                 fullWidth
                 size="large"
-                disabled={authLoading}
+                disabled={loading}
                 sx={{
                   fontWeight: 600,
                   py: 1.5,
@@ -311,59 +297,24 @@ export default function Login() {
                   textTransform: "none",
                   fontSize: 18,
                   position: "relative",
-                  // Smooth transition for loading state
                   transition: "all 0.2s ease-in-out",
+                //   background: "linear-gradient(135deg, #1a237e 0%, #3949ab 100%)",
+                //   "&:hover": {
+                //     background: "linear-gradient(135deg, #0d1b5e 0%, #2c3e8f 100%)",
+                //   }
                 }}
                 endIcon={
-                  authLoading ? (
+                  loading ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
                     <ArrowRightAltIcon sx={{ fontSize: 22 }} />
                   )
                 }
               >
-                {authLoading ? "Signing In..." : "Sign In"}
+                {loading ? "Signing In..." : "Sign In as Admin"}
               </Button>
             </Box>
           </CardContent>
-
-          <CardActions
-            sx={{
-              flexDirection: "column",
-              alignItems: "stretch",
-              gap: 2,
-              px: 2,
-              pb: 2,
-            }}
-          >
-            <Divider sx={{ my: 1 }}>Or</Divider>
-            <Box sx={{ textAlign: "center", fontSize: 15 }}>
-              <Typography
-                component="span"
-                sx={{ color: "text.secondary", fontSize: 14 }}
-              >
-                Don't have an account?{" "}
-              </Typography>
-              <Link to="/signUp" style={{ textDecoration: "none" }}>
-                <Typography
-                  component="span"
-                  sx={{
-                    textTransform: "none",
-                    textDecoration: "underline",
-                    color: "secondary.main",
-                    cursor: "pointer",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    display: "inline-flex",
-                    alignItems: "center",
-                  }}
-                >
-                  Create Account
-                  <ArrowRightAltIcon sx={{ fontSize: 18, ml: 0.5 }} />
-                </Typography>
-              </Link>
-            </Box>
-          </CardActions>
         </Card>
 
         <Box sx={{ mt: 3, textAlign: "center" }}>
@@ -371,7 +322,7 @@ export default function Login() {
             variant="caption"
             sx={{ color: "text.secondary", fontSize: 12 }}
           >
-            🔒 Your information is secure and encrypted
+            🔒 Restricted access - Authorized personnel only
           </Typography>
         </Box>
       </Box>
