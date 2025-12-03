@@ -156,66 +156,6 @@ const Profile = () => {
               </Stack>
             </Box>
 
-            {/* Availability Section */}
-            {(user?.availableDate || user?.availableTime) && (
-              <Box sx={{ pt: 2 }}>
-                <Divider sx={{ mb: 2 }} />
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    mb: 1,
-                  }}
-                >
-                  <TrendingUp
-                    sx={{ fontSize: "1rem", color: "success.main" }}
-                  />
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    Availability
-                  </Typography>
-                </Box>
-                <Stack spacing={1}>
-                  {user?.availableDate && (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ minWidth: 60 }}
-                      >
-                        📅 Date:
-                      </Typography>
-                      <Typography variant="body2">
-                        {new Date(user.availableDate).toLocaleDateString(
-                          "en-US",
-                          {
-                            weekday: "short",
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          }
-                        )}
-                      </Typography>
-                    </Box>
-                  )}
-                  {user?.availableTime && (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ minWidth: 60 }}
-                      >
-                        🕐 Time:
-                      </Typography>
-                      <Typography variant="body2">
-                        {user.availableTime.substring(0, 5)}
-                      </Typography>
-                    </Box>
-                  )}
-                </Stack>
-              </Box>
-            )}
-
             <Box sx={{ pt: 2 }}>
               <Divider sx={{ mb: 2 }} />
               <Box
@@ -247,6 +187,8 @@ const Profile = () => {
               </Box>
             </Box>
 
+
+
             {/* Recent Searched Skills */}
             <Box sx={{ pt: 2 }}>
               <Divider sx={{ mb: 2 }} />
@@ -269,25 +211,21 @@ const Profile = () => {
                 </Box>
               ) : getRecentSearchedSkillsResp?.recentSearches?.length > 0 ? (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {getRecentSearchedSkillsResp.recentSearches.map(
-                    (item, index) => (
-                      <Chip
-                        key={index}
-                        label={item.skill}
-                        icon={
-                          <History sx={{ fontSize: "0.875rem !important" }} />
-                        }
-                        size="small"
-                        sx={{
-                          bgcolor: "#ffffff",
-                          border: 1,
-                          borderColor: "secondary.main",
-                          color: "secondary.dark",
-                          "& .MuiChip-label": { fontWeight: 500 },
-                        }}
-                      />
-                    )
-                  )}
+                  {getRecentSearchedSkillsResp.recentSearches.map((item, index) => (
+                    <Chip
+                      key={index}
+                      label={item.skill}
+                      icon={<History sx={{ fontSize: "0.875rem !important" }} />}
+                      size="small"
+                      sx={{
+                        bgcolor: "#ffffff",
+                        border:1,
+                        borderColor: "secondary.main",
+                        color: "secondary.dark",
+                        "& .MuiChip-label": { fontWeight: 500 },
+                      }}
+                    />
+                  ))}
                 </Box>
               ) : (
                 <Typography variant="body2" color="text.secondary">
@@ -361,7 +299,10 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        <UpdateProfilePopup open={open} handleClose={handleClose} />
+        <UpdateProfilePopup 
+          open={open} 
+          handleClose={handleClose} 
+        />
       </Stack>
     );
 }

@@ -34,7 +34,7 @@ import {
   getSkillsGroupedByCategoryAction,
   getAllCountiesAction,
   searchUsersBySkillAndCountyAction,
-  getSuggestedMatchesAction,
+  getAllUsersAction,
 } from "../../../common/state/CommonActions";
 import { CATEGORY_ICONS } from "../../../common/CategoryIcons";
 import MessageChat from "./MessageChat";
@@ -122,7 +122,8 @@ export default function Dashboard() {
     getAllCountiesResp,
     searchUsersBySkillAndCounty,
     searchUsersBySkillAndCountyResp,
-    getSuggestedMatchesResp,
+    // getAllUsers,
+    getAllUsersResp,
   } = useSelector((state) => state.CommonReducer);
 
   // Transform API data to match component structure
@@ -175,22 +176,14 @@ export default function Dashboard() {
       setFilteredSkills([]);
       setShowSuggestions(false);
     }
-  }, [searchQuery, isSearchFocused, ALL_SKILLS]);
+  }, [searchQuery, isSearchFocused]);
 
   // Load skills and counties data on component mount
   useEffect(() => {
     dispatch(getSkillsGroupedByCategoryAction());
     dispatch(getAllCountiesAction());
-    
-    // Get suggested matches for the current user (API returns 3 matches automatically)
-    if (user?.userId || user?.id) {
-      const userId = user.userId || user.id;
-      
-      dispatch(getSuggestedMatchesAction({
-        userId,
-      }));
-    }
-  }, [dispatch, user?.userId, user?.id]);
+    dispatch(getAllUsersAction());
+  }, [dispatch]);
 
   // Update filtered users when API response changes
   useEffect(() => {
@@ -199,35 +192,12 @@ export default function Dashboard() {
     }
   }, [searchUsersBySkillAndCountyResp]);
 
-  // Set initial users when getSuggestedMatches response is available
+  // Set initial users when getAllUsers response is available
   useEffect(() => {
-    if (getSuggestedMatchesResp?.suggestedMatches && getSuggestedMatchesResp.suggestedMatches.length > 0) {
-      // Transform API response to match component structure
-      const transformedUsers = getSuggestedMatchesResp.suggestedMatches.map(match => ({
-        userId: match.userId,
-        id: match.userId,
-        name: match.fullName,
-        fullName: match.fullName,
-        location: match.localityOrArea 
-          ? `${match.cityOrTown}, ${match.localityOrArea}` 
-          : match.cityOrTown,
-        county: match.cityOrTown,
-        cityOrTown: match.cityOrTown,
-        country: match.country,
-        email: match.email,
-        contact: match.email,
-        phoneNumber: match.phoneNumber,
-        skillsOffered: match.allUserSkills || match.allSkills || [match.matchedSkill],
-        skillsNeeded: [],
-        rating: 0,
-        completedTrades: 0,
-        profilePicture: null,
-        matchType: match.matchType,
-        matchedSkill: match.matchedSkill,
-      }));
-      setFilteredUsers(transformedUsers);
+    if (getAllUsersResp && getAllUsersResp.length > 0) {
+      setFilteredUsers(getAllUsersResp);
     }
-  }, [getSuggestedMatchesResp]);
+  }, [getAllUsersResp]);
 
   // Handle clicks outside of search area to close suggestions
   useEffect(() => {
@@ -284,35 +254,12 @@ export default function Dashboard() {
     setShowSuggestions(false);
     setSelectedCounty("All Counties");
 
-    // Reset to show suggested matches
-    if (getSuggestedMatchesResp?.suggestedMatches && getSuggestedMatchesResp.suggestedMatches.length > 0) {
-      // Transform API response to match component structure
-      const transformedUsers = getSuggestedMatchesResp.suggestedMatches.map(match => ({
-        userId: match.userId,
-        id: match.userId,
-        name: match.fullName,
-        fullName: match.fullName,
-        location: match.localityOrArea 
-          ? `${match.cityOrTown}, ${match.localityOrArea}` 
-          : match.cityOrTown,
-        county: match.cityOrTown,
-        cityOrTown: match.cityOrTown,
-        country: match.country,
-        email: match.email,
-        contact: match.email,
-        phoneNumber: match.phoneNumber,
-        skillsOffered: match.allUserSkills || match.allSkills || [match.matchedSkill],
-        skillsNeeded: [],
-        rating: 0,
-        completedTrades: 0,
-        profilePicture: null,
-        matchType: match.matchType,
-        matchedSkill: match.matchedSkill,
-      }));
-      setFilteredUsers(transformedUsers);
+    // Reset to show all users without making API call with empty params
+    if (getAllUsersResp && getAllUsersResp.length > 0) {
+      setFilteredUsers(getAllUsersResp);
     } else {
-      // Fallback to empty array if no API data available
-      setFilteredUsers([]);
+      // Fallback to mock users if no API data available
+      setFilteredUsers(mockUsers);
     }
 
     if (searchInputRef.current) {
@@ -765,7 +712,14 @@ export default function Dashboard() {
                       <Button
                         variant="outlined"
                         onClick={() => {
-                          handleClearSearch();
+                          setSearchQuery("");
+                          setSelectedCounty("All Counties");
+                          // Reset to show all users without making API call with empty params
+                          if (getAllUsersResp && getAllUsersResp.length > 0) {
+                            setFilteredUsers(getAllUsersResp);
+                          } else {
+                            setFilteredUsers(mockUsers);
+                          }
                         }}
                       >
                         Clear Filters
@@ -794,8 +748,7 @@ export default function Dashboard() {
                             }}
                           >
                             {/* User Avatar & Info */}
-                            {/* <Box sx={{ display: "flex", gap: 2, flex: 1, height: 130 }}> */}
-                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, flex: 1, height: 120 }}>
+                            <Box sx={{ display: "flex", gap: 2, flex: 1 }}>
                               <Box
                                 sx={{
                                   width: 64,
@@ -870,7 +823,84 @@ export default function Dashboard() {
                             {/* Skills */}
                             <Box sx={{ flex: 1 }}>
                               <Stack spacing={2}>
-                    
+                                <Box>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ mb: 1, display: "block" }}
+                                  >
+                                    Skills Offered
+                                  </Typography>
+
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      flexWrap: "wrap",
+                                      gap: 0.5,
+                                    }}
+                                  >
+                                    {(() => {
+                                      // ✅ Combine both user.skills and user.skill
+                                      let rawSkills =
+                                        user?.skills ?? user?.skill;
+
+                                      if (!rawSkills) {
+                                        return (
+                                          <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                          >
+                                            No skills listed
+                                          </Typography>
+                                        );
+                                      }
+
+                                      let skillsToDisplay = [];
+
+                                      // Handle if string (comma or semicolon separated)
+                                      if (typeof rawSkills === "string") {
+                                        skillsToDisplay = rawSkills
+                                          .split(
+                                            /[,;|]|(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])/
+                                          )
+                                          .map((s) => s.trim())
+                                          .filter((s) => s.length > 0);
+                                      }
+                                      // Handle if array
+                                      else if (Array.isArray(rawSkills)) {
+                                        skillsToDisplay = rawSkills.filter(
+                                          (s) => s && s.length > 0
+                                        );
+                                      }
+                                      // Handle other cases
+                                      else {
+                                        skillsToDisplay = [
+                                          String(rawSkills),
+                                        ].filter((s) => s && s.length > 0);
+                                      }
+
+                                      return skillsToDisplay.map(
+                                        (skill, index) => (
+                                          <Box
+                                            key={index}
+                                            sx={{
+                                              backgroundColor: "primary.main2",
+                                              color: "primary.dark",
+                                              px: 1.5,
+                                              py: 0.5,
+                                              borderRadius: "12px",
+                                              fontSize: "0.7rem",
+                                              fontWeight: 500,
+                                            }}
+                                          >
+                                            {skill}
+                                          </Box>
+                                        )
+                                      );
+                                    })()}
+                                  </Box>
+                                </Box>
+
                                 {/* Optional: Skills Offered */}
                                 {user.skillsOffered && (
                                   <Box>
@@ -879,7 +909,7 @@ export default function Dashboard() {
                                       color="text.secondary"
                                       sx={{ mb: 1, display: "block" }}
                                     >
-                                      Skills Offered
+                                      All Skills Offered
                                     </Typography>
                                     <Box
                                       sx={{
@@ -888,7 +918,7 @@ export default function Dashboard() {
                                         gap: 0.5,
                                       }}
                                     >
-                                      {user?.skillsOffered.map(
+                                      {user.skillsOffered.map(
                                         (skill, index) => (
                                           <Box
                                             key={index}
@@ -909,7 +939,44 @@ export default function Dashboard() {
                                     </Box>
                                   </Box>
                                 )}
-                                
+
+                                {/* Optional: Skills Needed */}
+                                {user.skillsNeeded && (
+                                  <Box>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      sx={{ mb: 1, display: "block" }}
+                                    >
+                                      Skills Needed
+                                    </Typography>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        flexWrap: "wrap",
+                                        gap: 0.5,
+                                      }}
+                                    >
+                                      {user.skillsNeeded.map((skill, index) => (
+                                        <Box
+                                          key={index}
+                                          sx={{
+                                            border: "1px solid",
+                                            borderColor: "primary.main",
+                                            color: "primary.main",
+                                            px: 1.5,
+                                            py: 0.5,
+                                            borderRadius: "12px",
+                                            fontSize: "0.7rem",
+                                            fontWeight: 500,
+                                          }}
+                                        >
+                                          {skill}
+                                        </Box>
+                                      ))}
+                                    </Box>
+                                  </Box>
+                                )}
                               </Stack>
                             </Box>
 
@@ -944,7 +1011,6 @@ export default function Dashboard() {
                               direction={{ xs: "column", md: "column" }} // column on mobile, row on desktop
                               spacing={1}
                               alignItems="center" // centers when row
-                              justifyContent="center"
                               // sx={{ mt: 1 }}
                             >
                               <Button

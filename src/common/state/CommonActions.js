@@ -93,7 +93,7 @@ export const searchUsersBySkillAndCountyAction = createAsyncThunk(
 
 export const getSuggestedMatchesAction = createAsyncThunk(
   "common/getSuggestedMatches",
-  async ({ userId, limit, county }, { rejectWithValue }) => {
+  async ({ userId }, { rejectWithValue }) => {
     try {
       // Get token from localStorage for authentication
       const token = localStorage.getItem('authToken');
@@ -105,7 +105,7 @@ export const getSuggestedMatchesAction = createAsyncThunk(
       const response = await axios.get(
         `${config.apiUrl}users/GetSuggestedMatches/${userId}`,
         {
-          params: { limit, county },
+          // params: { limit, county },
           headers: {
             Authorization: `Bearer ${token}`,
           },
