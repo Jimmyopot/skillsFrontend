@@ -43,7 +43,7 @@ export function HeroSection() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % professionImages.length);
-    }, 4000);
+    }, 8000);
     return () => clearInterval(interval);
   }, [professionImages.length]);
 
@@ -319,48 +319,6 @@ export function HeroSection() {
                   />
                 ))}
               </Box>
-
-              {/* Navigation Arrows */}
-              {/* <Box
-                component="button"
-                onClick={prevImage}
-                aria-label="Previous image"
-                sx={{
-                  position: "absolute",
-                  right: 0,
-                  top: "25%",
-                  transform: "translateX(48px) translateY(-50%)",
-                  p: 1,
-                  borderRadius: "50%",
-                  backgroundColor: "background.paper",
-                  boxShadow: 3,
-                  "&:hover": { backgroundColor: "grey.100" },
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                <KeyboardArrowUpIcon sx={{ fontSize: 20 }} />
-              </Box>
-              <Box
-                component="button"
-                onClick={nextImage}
-                aria-label="Next image"
-                sx={{
-                  position: "absolute",
-                  right: 0,
-                  bottom: "25%",
-                  transform: "translateX(48px) translateY(50%)",
-                  p: 1,
-                  borderRadius: "50%",
-                  backgroundColor: "background.paper",
-                  boxShadow: 3,
-                  "&:hover": { backgroundColor: "grey.100" },
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                <KeyboardArrowDownIcon sx={{ fontSize: 20 }} />
-              </Box> */}
             </Box>
           </Box>
         </Box>

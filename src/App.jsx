@@ -1,5 +1,5 @@
 import "./App.css";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import IndexPage from "./pages/landingPage/IndexPage";
 import SignUpPage from "./pages/signUp/SignUpPage";
 import LoginPage from "./pages/login/LoginPage";
@@ -25,12 +25,12 @@ function App() {
     dispatch(checkAuthAction());
   }, [dispatch]);
 
-  const loc = useLocation();
+  // const loc = useLocation();
  
-if (loc.pathname === "/") {
+// if (loc.pathname === "/") {
  
-  localStorage.clear();
-}
+//   localStorage.clear();
+// }
 
   // If offline, show the no internet page
   if (!isOnline) {

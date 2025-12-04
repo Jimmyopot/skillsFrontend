@@ -324,7 +324,7 @@ const Profile = () => {
                   <Typography variant="body2">Active Trades</Typography>
                 </Box>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  3
+                  0
                 </Typography>
               </Box>
               <Box
@@ -339,7 +339,7 @@ const Profile = () => {
                   <Typography variant="body2">Completed</Typography>
                 </Box>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  8
+                  0
                 </Typography>
               </Box>
               <Box
@@ -354,7 +354,7 @@ const Profile = () => {
                   <Typography variant="body2">Rating</Typography>
                 </Box>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  4.9
+                  0.0
                 </Typography>
               </Box>
             </Stack>

@@ -36,16 +36,29 @@ export const getAllCountiesAction = createAsyncThunk(
 
 export const updateProfileAction = createAsyncThunk(
   "common/updateProfile",
-  async ({ userId, onSuccess, onFailure }, { rejectWithValue }) => {
+  async ({ userId, profileData }, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        return rejectWithValue("Authentication token not found. Please login.");
+      }
+
       const response = await axios.put(
-        config.apiUrl + `users/UpdateProfile/${userId}`
+        `${config.apiUrl}users/UpdateProfile/${userId}`,
+        profileData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
       );
-      onSuccess(response.data);
       return response.data;
     } catch (error) {
-      onFailure();
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response?.data || "Failed to update profile"
+      );
     }
   }
 );

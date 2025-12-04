@@ -1,31 +1,16 @@
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { CircularProgress, Box } from "@mui/material";
+import { useTokenExpiry } from "../../hooks/useTokenExpiry";
 
 export function ProtectedRoute({ children }) {
-  // @ts-ignore
-  const loginState = useSelector((state) => state?.LoginReducer || {});
- 
+  const { user } = useSelector((state) => state.AuthReducer);
   const authToken = localStorage.getItem("authToken");
+  
+  // Monitor token expiry and auto-logout when expired
+  useTokenExpiry();
 
-  // Show loading spinner while checking authentication
-  // if (checkingAuth) {
-  //   return (
-  //     <Box
-  //       sx={{
-  //         display: 'flex',
-  //         justifyContent: 'center',
-  //         alignItems: 'center',
-  //         minHeight: '100vh',
-  //       }}
-  //     >
-  //       <CircularProgress />
-  //     </Box>
-  //   );
-  // }
-
-  // If not authenticated, redirect to login
-  if (!authToken) {
+  // If not authenticated or no user, redirect to login
+  if (!authToken || !user) {
     return <Navigate to="/login" replace />;
   }
 
