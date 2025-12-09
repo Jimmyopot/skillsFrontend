@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getAllCountiesAction, getAllUsersAction, getSkillsGroupedByCategoryAction, getSuggestedMatchesAction, searchUsersBySkillAndCountyAction, updateProfileAction, getRecentSearchedSkillsAction } from "./CommonActions";
+import { getAllCountiesAction, getAllUsersAction, getSkillsGroupedByCategoryAction, getSuggestedMatchesAction, searchUsersBySkillAndCountyAction, updateProfileAction, getRecentSearchedSkillsAction, getChatHistoryAction } from "./CommonActions";
 
 const initialState = {
   getAllUsers: false,
@@ -22,6 +22,9 @@ const initialState = {
 
   getRecentSearchedSkills: false,
   getRecentSearchedSkillsResp: null,
+
+  getChatHistory: false,
+  getChatHistoryResp: null,
 };
 
 const commonSlice = createSlice({
@@ -122,6 +125,19 @@ const commonSlice = createSlice({
       .addCase(getRecentSearchedSkillsAction.rejected, (state, action) => {
         state.getRecentSearchedSkills = false;
         state.getRecentSearchedSkillsResp = action.payload;
+      })
+
+      .addCase(getChatHistoryAction.pending, (state) => {
+        state.getChatHistory = true;
+        state.getChatHistoryResp = null;
+      })
+      .addCase(getChatHistoryAction.fulfilled, (state, action) => {
+        state.getChatHistory = false;
+        state.getChatHistoryResp = action.payload;
+      })
+      .addCase(getChatHistoryAction.rejected, (state, action) => {
+        state.getChatHistory = false;
+        state.getChatHistoryResp = action.payload;
       });
   },
 });

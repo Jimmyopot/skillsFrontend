@@ -160,3 +160,31 @@ export const getRecentSearchedSkillsAction = createAsyncThunk(
     }
   }
 );
+
+export const getChatHistoryAction = createAsyncThunk(
+  "common/getChatHistory",
+  async (_, { rejectWithValue }) => {
+    try {
+      // Get token from localStorage for authentication
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        return rejectWithValue("Authentication token not found. Please login.");
+      }
+
+      const response = await axios.get(
+        `${config.apiUrl}utils/GetChatHistory`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Failed to fetch chat history"
+      );
+    }
+  }
+);

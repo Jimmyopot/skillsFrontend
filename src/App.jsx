@@ -25,14 +25,6 @@ function App() {
     dispatch(checkAuthAction());
   }, [dispatch]);
 
-  // const loc = useLocation();
- 
-// if (loc.pathname === "/") {
- 
-//   localStorage.clear();
-// }
-
-  // If offline, show the no internet page
   if (!isOnline) {
     return <NoInternetPage />;
   }
