@@ -37,7 +37,7 @@ export function HeroSection() {
 
   const goToSignUp = () => {
     navigate("/signUp");
-  }
+  };
 
   // Auto-rotate images every 4 seconds
   useEffect(() => {
@@ -169,8 +169,13 @@ export function HeroSection() {
                 Get Started
               </Button>
               <Button
-                component="a"
-                href="#how-it-works"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const element = document.getElementById("how-it-works");
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
                 size="large"
                 variant="outlined"
                 color="secondary"
