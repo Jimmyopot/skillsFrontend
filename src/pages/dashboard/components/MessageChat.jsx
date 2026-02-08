@@ -65,7 +65,9 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
     return {
       id: selectedUser.userId || selectedUser.id,
       name: selectedUser.name || selectedUser.fullName,
-      location: selectedUser.location || `${selectedUser.cityOrTown}, ${selectedUser.country || "Kenya"}`,
+      location:
+        selectedUser.location ||
+        `${selectedUser.cityOrTown}, ${selectedUser.country || "Kenya"}`,
       profilePicture: selectedUser.profilePicture,
       skillsOffered: selectedUser.skillsOffered || [],
       skillsNeeded: selectedUser.skillsNeeded || [],
@@ -95,26 +97,36 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
   // CRITICAL FIX: Check localStorage user object if Redux state is not populated
   const myUserId = useMemo(() => {
     // First try from Redux state
-    let userId = authState.user?.userId || authState.user?.id || authState.user?.ID || authState.user?.UserId;
-    
+    let userId =
+      authState.user?.userId ||
+      authState.user?.id ||
+      authState.user?.ID ||
+      authState.user?.UserId;
+
     // If not in Redux, try localStorage
     if (!userId) {
       try {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
-          userId = parsedUser?.userId || parsedUser?.id || parsedUser?.ID || parsedUser?.UserId;
+          userId =
+            parsedUser?.userId ||
+            parsedUser?.id ||
+            parsedUser?.ID ||
+            parsedUser?.UserId;
         }
       } catch (error) {
         console.error("Error parsing user from localStorage:", error);
       }
     }
-    
+
     // Fallback to hardcoded ID (for development)
     if (!userId) {
-      userId = localStorage.getItem("userId") || "2952da01-2354-4f24-87d1-9481e11f6a77";
+      userId =
+        localStorage.getItem("userId") ||
+        "2952da01-2354-4f24-87d1-9481e11f6a77";
     }
-    
+
     // console.log("MessageChat - Resolved User ID:", userId);
     return userId;
   }, [authState.user]);
@@ -154,7 +166,8 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
       if (!msg) return null;
       const id = msg.id || msg.Id || msg.messageId || `${Date.now()}`;
       const senderId = msg.senderId || msg.SenderId || msg.sender || null;
-      const receiverId = msg.receiverId || msg.ReceiverId || msg.receiver || null;
+      const receiverId =
+        msg.receiverId || msg.ReceiverId || msg.receiver || null;
       const text = msg.text || msg.Text || msg.message || "";
       const timestamp =
         msg.timestampUtc ||
@@ -165,8 +178,9 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         typeof msg.isRead !== "undefined" ? msg.isRead : msg.IsRead || false;
 
       // CRITICAL FIX: Properly identify sender by comparing GUIDs
-      const isMySender = String(senderId).toLowerCase() === String(myUserId).toLowerCase();
-      
+      const isMySender =
+        String(senderId).toLowerCase() === String(myUserId).toLowerCase();
+
       // console.log("mapServerMessage - Message ID:", id, "| SenderId:", senderId, "| MyUserId:", myUserId, "| IsMine:", isMySender);
 
       return {
@@ -180,7 +194,7 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         raw: msg,
       };
     },
-    [myUserId]
+    [myUserId],
   );
 
   // CRITICAL FIX: Fetch history with proper dependencies
@@ -220,7 +234,7 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         setIsLoadingHistory(false);
       }
     },
-    [getToken, mapServerMessage] // Only depend on stable functions
+    [getToken, mapServerMessage], // Only depend on stable functions
   );
 
   // Create stable handlers
@@ -231,15 +245,23 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
       if (!mapped) return;
 
       // CRITICAL FIX: Better relevance check with proper GUID comparison
-      const msgSenderId = String(msg.senderId || msg.SenderId || '').toLowerCase();
-      const msgReceiverId = String(msg.receiverId || msg.ReceiverId || '').toLowerCase();
+      const msgSenderId = String(
+        msg.senderId || msg.SenderId || "",
+      ).toLowerCase();
+      const msgReceiverId = String(
+        msg.receiverId || msg.ReceiverId || "",
+      ).toLowerCase();
       const myUserIdLower = String(myUserId).toLowerCase();
-      const chatPartnerIdLower = String(chatPartner?.id || '').toLowerCase();
+      const chatPartnerIdLower = String(chatPartner?.id || "").toLowerCase();
 
       const isRelevantMessage = currentSessionId
-        ? String(msg.skillExchangeSessionId || msg.SkillExchangeSessionId || '').toLowerCase() === String(currentSessionId).toLowerCase()
-        : (msgSenderId === chatPartnerIdLower && msgReceiverId === myUserIdLower) ||
-          (msgSenderId === myUserIdLower && msgReceiverId === chatPartnerIdLower);
+        ? String(
+            msg.skillExchangeSessionId || msg.SkillExchangeSessionId || "",
+          ).toLowerCase() === String(currentSessionId).toLowerCase()
+        : (msgSenderId === chatPartnerIdLower &&
+            msgReceiverId === myUserIdLower) ||
+          (msgSenderId === myUserIdLower &&
+            msgReceiverId === chatPartnerIdLower);
 
       // console.log("Is relevant message:", isRelevantMessage, {
       //   msgSenderId,
@@ -253,8 +275,9 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
           // CRITICAL FIX: Check duplicates more thoroughly
           const msgId = String(mapped.id).toLowerCase();
           const exists = prev.some(
-            (m) => String(m.id).toLowerCase() === msgId ||
-                   (m.raw?.id && String(m.raw.id).toLowerCase() === msgId)
+            (m) =>
+              String(m.id).toLowerCase() === msgId ||
+              (m.raw?.id && String(m.raw.id).toLowerCase() === msgId),
           );
           if (exists) {
             // console.log("Message already exists, skipping duplicate");
@@ -265,7 +288,7 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         });
       }
     },
-    [currentSessionId, chatPartner?.id, myUserId, mapServerMessage]
+    [currentSessionId, chatPartner?.id, myUserId, mapServerMessage],
   );
 
   const handleMessageSent = useCallback(
@@ -284,13 +307,13 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
           }
           return m;
         });
-        
+
         // If we didn't replace any optimistic message, don't add it
         // (it will come via ReceiveMessage for the sender too)
         return updated;
       });
     },
-    [mapServerMessage]
+    [mapServerMessage],
   );
 
   const handleConnected = useCallback(() => {
@@ -314,7 +337,7 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         console.error("Failed to refetch history on reconnect:", err);
       }
     },
-    [currentSessionId, chatPartner?.id, fetchHistory] // Now fetchHistory is stable
+    [currentSessionId, chatPartner?.id, fetchHistory], // Now fetchHistory is stable
   );
 
   const signalRHandlers = useMemo(
@@ -331,7 +354,7 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
       handleConnected,
       handleDisconnected,
       handleReconnected,
-    ]
+    ],
   );
 
   const {
@@ -360,32 +383,52 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
       isInitialized = true;
 
       try {
-        // console.log("Starting SignalR connection...");
+        // CRITICAL FIX: Verify token before attempting connection
+        const token = getToken();
+        if (!token) {
+          console.error(
+            "No auth token available. Cannot start SignalR connection.",
+          );
+          alert("Authentication required. Please login again.");
+          return;
+        }
+
+        console.log("Starting SignalR connection...");
         await start();
+        console.log("SignalR connection established successfully");
 
         if (!mounted) return;
 
         // Join session if present
         if (currentSessionId) {
-          // console.log("Joining session:", currentSessionId);
+          console.log("Joining session:", currentSessionId);
           await joinSession(currentSessionId);
         }
 
         // Now fetch history after SignalR is connected
-        // console.log("Fetching chat history...");
+        console.log("Fetching chat history...");
         if (currentSessionId) {
           await fetchHistory({ sessionId: currentSessionId });
         } else {
           await fetchHistory({ withUserId: chatPartner.id });
         }
+        console.log("Chat initialization complete");
       } catch (err) {
-        console.error("Setup error:", err);
+        console.error("SignalR setup error:", err);
+        if (
+          err.message?.includes("401") ||
+          err.message?.includes("Unauthorized")
+        ) {
+          alert("Authentication failed. Please login again.");
+        } else {
+          console.error("Failed to establish chat connection. Retrying...");
+        }
       }
     })();
 
     return () => {
       mounted = false;
-      // console.log("Cleanup: stopping SignalR");
+      console.log("Cleanup: stopping SignalR");
       stop?.();
     };
   }, [
@@ -396,6 +439,7 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
     stop,
     joinSession,
     fetchHistory,
+    getToken,
   ]);
 
   // Auto-scroll to bottom when messages change
@@ -413,6 +457,15 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
 
       if (!token) {
         alert("You must be logged in to send messages. Please login first.");
+        return;
+      }
+
+      // CRITICAL FIX: Check SignalR connection state before sending
+      if (connectionState !== "connected") {
+        alert(
+          `Cannot send message: Connection is ${connectionState}. Please wait for connection to establish.`,
+        );
+        console.error("SignalR not connected. Current state:", connectionState);
         return;
       }
 
@@ -436,22 +489,32 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         try {
           // CRITICAL FIX: Send ONLY via SignalR to avoid duplicates
           // SignalR will persist to DB and broadcast to receiver
-          // console.log("Sending message via SignalR...");
+          console.log(
+            "Sending message via SignalR. Connection state:",
+            connectionState,
+          );
           await signalrSendMessage(chatPartner.id, text, currentSessionId);
-          // console.log("Message sent successfully via SignalR");
+          console.log("Message sent successfully via SignalR");
 
           // The MessageSent event will replace the optimistic message
           // with the real one from the server
         } catch (err) {
           console.error("Send failed:", err);
-          
+
           // Remove optimistic message on error
           setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
-          
-          if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
+
+          if (
+            err.message?.includes("401") ||
+            err.message?.includes("Unauthorized")
+          ) {
             alert("Authentication failed. Please login again.");
+          } else if (err.message?.includes("connection not started")) {
+            alert(
+              "Connection lost. Reconnecting... Please try again in a moment.",
+            );
           } else {
-            alert(`Failed to send message: ${err.message || 'Unknown error'}`);
+            alert(`Failed to send message: ${err.message || "Unknown error"}`);
           }
         }
       })();
@@ -463,7 +526,8 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
       currentSessionId,
       myUserId,
       signalrSendMessage,
-    ]
+      connectionState,
+    ],
   );
 
   // Mark unread messages as read
@@ -478,7 +542,7 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
               m.raw &&
               (m.raw.receiverId === myUserId ||
                 m.raw.ReceiverId === myUserId) &&
-              !m.read
+              !m.read,
           )
           .map((m) => m.id || m.raw.id || m.raw.Id)
           .filter(Boolean);
@@ -488,11 +552,11 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
           await markAsRead(unreadIds);
           setMessages((prev) =>
             prev.map((m) =>
-              unreadIds.includes(m.id) ? { ...m, read: true } : m
-            )
+              unreadIds.includes(m.id) ? { ...m, read: true } : m,
+            ),
           );
         }
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (e) {
         // console.error("Failed to mark messages as read:", e);
       }
@@ -651,7 +715,10 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
                           wordBreak: "break-word",
                         }}
                       >
-                        <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ whiteSpace: "pre-wrap" }}
+                        >
                           {message.text}
                         </Typography>
                       </Paper>
@@ -692,6 +759,29 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
             bgcolor: "background.paper",
           }}
         >
+          {/* Connection Status Indicator */}
+          {connectionState !== "connected" && (
+            <Box sx={{ mb: 1 }}>
+              <Chip
+                label={
+                  connectionState === "connecting" ||
+                  connectionState === "reconnecting"
+                    ? "Connecting to chat..."
+                    : connectionState === "error"
+                      ? "Connection error - retrying..."
+                      : "Disconnected"
+                }
+                size="small"
+                color={
+                  connectionState === "connecting" ||
+                  connectionState === "reconnecting"
+                    ? "warning"
+                    : "error"
+                }
+                sx={{ fontSize: "0.75rem" }}
+              />
+            </Box>
+          )}
           <Stack direction="row" spacing={1} alignItems="center">
             <IconButton onClick={() => alert("Emoji picker - coming soon")}>
               <EmojiEmotionsIcon />
@@ -701,22 +791,27 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   handleSendMessage(e);
                 }
               }}
-              placeholder="Type your message..."
+              placeholder={
+                connectionState === "connected"
+                  ? "Type your message..."
+                  : "Connecting to chat..."
+              }
               variant="outlined"
               size="small"
               fullWidth
               autoComplete="off"
               spellCheck="true"
+              disabled={connectionState !== "connected"}
             />
             <Button
               type="submit"
               variant="contained"
-              disabled={!newMessage.trim()}
+              disabled={!newMessage.trim() || connectionState !== "connected"}
               endIcon={<SendIcon />}
             >
               Send
