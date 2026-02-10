@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
@@ -14,7 +14,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import { useNavigate } from "react-router-dom";
-import { clearAuthObj } from "../../login/state/authSlice.js";
+import { clearAuthObj } from "../../login/state/authSlice.js"; 
 import { useDispatch } from "react-redux";
 
 const navLinks = [
@@ -29,7 +29,6 @@ export function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
 
   const goToSignUp = () => {
     navigate("/signUp");
@@ -40,60 +39,22 @@ export function Navbar() {
     navigate("/login");
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const container = document.getElementById("landing-container");
-      const scrollPosition = container ? container.scrollTop : window.scrollY;
-
-      if (scrollPosition > 40) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    const container = document.getElementById("landing-container");
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-      return () => container.removeEventListener("scroll", handleScroll);
-    } else {
-      window.addEventListener("scroll", handleScroll);
-      return () => window.removeEventListener("scroll", handleScroll);
-    }
-  }, []);
-
   return (
     <AppBar
-      elevation={0}
       position="fixed"
       sx={{
-        backgroundColor: isScrolled ? "#FFFFFF" : "transparent",
-        boxShadow: isScrolled ? "0px 4px 10px rgba(0,0,0,0.08)" : "none",
-        transition: "all 0.3s ease",
-        borderBottom: isScrolled ? 1 : 0,
-        borderColor: isScrolled ? "divider" : "transparent",
-        padding: isScrolled ? "0px 40px" : "20px 40px",
+        bgcolor: "background.main",
+        backdropFilter: "blur(8px)",
+        borderBottom: 1,
+        borderColor: "divider",
+        boxShadow: 0,
       }}
     >
       <Toolbar
         sx={{ minHeight: 64, display: "flex", justifyContent: "space-between" }}
       >
         {/* Logo */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1.5,
-            cursor: "pointer",
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            const element = document.getElementById("home");
-            if (element) {
-              element.scrollIntoView({ behavior: "smooth" });
-            }
-          }}
-        >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box
             sx={{
               p: 1,
@@ -110,11 +71,7 @@ export function Navbar() {
           </Box>
           <Typography
             variant="h6"
-            sx={{
-              fontWeight: "bold",
-              color: isScrolled ? "text.primary" : "#FFFFFF",
-              transition: "color 0.3s ease",
-            }}
+            sx={{ fontWeight: "bold", color: "text.primary" }}
           >
             NipeNikupe
           </Typography>
@@ -132,18 +89,17 @@ export function Navbar() {
             <Button
               key={link.href}
               onClick={(e) => {
-                e.preventDefault();
-                const id = link.href.replace("#", "");
+                e.preventDefault(); // prevent default anchor behavior
+                const id = link.href.replace("#", ""); // remove '#' to get the id
                 const element = document.getElementById(id);
                 if (element) {
                   element.scrollIntoView({ behavior: "smooth" });
                 }
               }}
               sx={{
-                color: isScrolled ? "text.primary" : "#FFFFFF",
+                color: "text.primary",
                 textTransform: "none",
                 fontWeight: 500,
-                transition: "color 0.3s ease",
                 "&:hover": { color: "primary.main" },
               }}
               variant="text"
@@ -173,19 +129,8 @@ export function Navbar() {
         <Box sx={{ display: { xs: "none", md: "block" } }}>
           <Button
             variant="outlined"
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              color: isScrolled ? "text.primary" : "#FFFFFF",
-              borderColor: isScrolled ? "secondary.main" : "#FFFFFF",
-              transition: "all 0.3s ease",
-              "&:hover": {
-                backgroundColor: isScrolled
-                  ? "rgba(0, 0, 0, 0.04)"
-                  : "rgba(255, 255, 255, 0.1)",
-                borderColor: isScrolled ? "secondary.dark" : "#FFFFFF",
-              },
-            }}
+            color="secondary"
+            sx={{ textTransform: "none", fontWeight: 600 }}
             onClick={goToLogin}
           >
             Login
@@ -205,22 +150,10 @@ export function Navbar() {
           <IconButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? (
               <CloseIcon
-                sx={{
-                  color: isScrolled ? "text.primary" : "#FFFFFF",
-                  width: 28,
-                  height: 28,
-                  transition: "color 0.3s ease",
-                }}
+                sx={{ color: "text.primary", width: 28, height: 28 }}
               />
             ) : (
-              <MenuIcon
-                sx={{
-                  color: isScrolled ? "text.primary" : "#FFFFFF",
-                  width: 28,
-                  height: 28,
-                  transition: "color 0.3s ease",
-                }}
-              />
+              <MenuIcon sx={{ color: "text.primary", width: 28, height: 28 }} />
             )}
           </IconButton>
         </Box>

@@ -30,6 +30,7 @@ import { clearUniquenessCheck } from "../state/SignUpSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../../common/snackbar/SnackbarContext";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CloseIcon from "@mui/icons-material/Close";
 
 export default function NipeNikupeRegistration() {
@@ -165,7 +166,7 @@ export default function NipeNikupeRegistration() {
 
             reject({ message, errorData, status });
           },
-        })
+        }),
       );
     });
   };
@@ -186,7 +187,7 @@ export default function NipeNikupeRegistration() {
         await checkUserUniqueness();
 
         // If we get here, user is unique, proceed to next step
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (error) {
         // User is not unique, errors have been set, don't proceed
         return;
@@ -288,7 +289,7 @@ export default function NipeNikupeRegistration() {
         onSuccess: () => {
           showSnackbar(
             "Registration successful! Please log in waiting for you...",
-            "success"
+            "success",
           );
           setTimeout(() => {
             navigate("/login");
@@ -298,7 +299,7 @@ export default function NipeNikupeRegistration() {
           console.error("❌ Signup failed:", errorMessage);
           setErrors((prev) => ({ ...prev, apiError: errorMessage })); // store API error
         },
-      })
+      }),
     );
   };
 
@@ -315,8 +316,38 @@ export default function NipeNikupeRegistration() {
   const strengthLabels = ["Weak", "Fair", "Good", "Strong"];
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#F0FCF0" }}>
-      <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 4 }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#F0FCF0", position: "relative" }}>
+      {/* Subtle Back to Home Button */}
+      <Button
+        onClick={() => navigate("/")}
+        startIcon={<ArrowBackIcon />}
+        sx={{
+          position: "absolute",
+          top: { xs: 16, md: 24 },
+          // bottom: { xs: "auto", md: 24 },
+          left: { xs: 16, md: 24 },
+          color: "text.secondary",
+          textTransform: "none",
+          fontSize: { xs: 14, md: 15 },
+          fontWeight: 500,
+          zIndex: 10,
+          transition: "all 0.2s ease-in-out",
+          "&:hover": {
+            color: "primary.main",
+            backgroundColor: "rgba(255, 255, 255, 0.15)",
+            transform: "translateX(-2px)",
+          },
+        }}
+      >
+        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+          Back to Home
+        </Box>
+        <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+          Home
+        </Box>
+      </Button>
+
+      <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 8 }}>
         <Box sx={{ maxWidth: 700, mx: "auto" }}>
           {/* Header */}
           <Box sx={{ textAlign: "center", mb: 4 }}>
@@ -366,7 +397,7 @@ export default function NipeNikupeRegistration() {
               { step: 2, icon: PlaceIcon, label: "Location" },
               { step: 3, icon: WorkIcon, label: "Skills" },
               { step: 4, icon: CalendarTodayIcon, label: "Availability" },
-            // eslint-disable-next-line no-unused-vars
+              // eslint-disable-next-line no-unused-vars
             ].map(({ step, icon: IconComponent, label }) => (
               <Box
                 key={step}

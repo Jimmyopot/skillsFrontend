@@ -36,7 +36,10 @@ export default function useSignalR({
         // Wait for existing connection attempt
         return new Promise((resolve) => {
           const checkInterval = setInterval(() => {
-            if (connectionRef.current?.state === signalR.HubConnectionState.Connected) {
+            if (
+              connectionRef.current?.state ===
+              signalR.HubConnectionState.Connected
+            ) {
               clearInterval(checkInterval);
               resolve(connectionRef.current);
             }
@@ -49,17 +52,33 @@ export default function useSignalR({
       }
     }
 
-    const token = getAccessToken ? getAccessToken() : null;
+    // PRODUCTION FIX: Set connecting state immediately
+    setConnectionState("connecting");
 
+    // Validate that we have a token factory function
+    if (!getAccessToken) {
+      const errMsg =
+        "getAccessToken function is required for SignalR connection.";
+      console.error(errMsg);
+      setConnectionState("error");
+      throw new Error(errMsg);
+    }
+
+    // CRITICAL FIX: accessTokenFactory should always call getAccessToken
+    // to get the fresh token, not capture the token value
     const conn = new signalR.HubConnectionBuilder()
-      .withUrl(
-        hubUrl,
-        token
-          ? {
-              accessTokenFactory: () => token,
-            }
-          : {}
-      )
+      .withUrl(hubUrl, {
+        accessTokenFactory: () => {
+          const token = getAccessToken();
+          if (!token) {
+            console.error(
+              "No access token available during SignalR connection",
+            );
+            throw new Error("No access token available");
+          }
+          return token;
+        },
+      })
       .withAutomaticReconnect([0, 2000, 5000, 10000])
       .configureLogging(signalR.LogLevel.Information)
       .build();
@@ -114,7 +133,7 @@ export default function useSignalR({
     if (!conn) return;
     try {
       await conn.stop();
-    } catch (e) {
+    } catch (err) {
       // ignore
     }
     connectionRef.current = null;
@@ -129,10 +148,10 @@ export default function useSignalR({
         "SendMessage",
         receiverId,
         text,
-        skillExchangeSessionId
+        skillExchangeSessionId,
       );
     },
-    []
+    [],
   );
 
   const markAsRead = useCallback(async (messageIds = []) => {
@@ -155,7 +174,7 @@ export default function useSignalR({
 
   const getConnectionId = useCallback(
     () => connectionRef.current?.connectionId,
-    []
+    [],
   );
 
   useEffect(() => {

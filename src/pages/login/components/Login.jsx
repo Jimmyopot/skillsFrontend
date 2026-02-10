@@ -13,6 +13,7 @@ import Divider from "@mui/material/Divider";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { Link, useNavigate } from "react-router-dom";
@@ -94,13 +95,13 @@ export default function Login() {
         login({
           email: email.trim(),
           password,
-        })
+        }),
       ).unwrap();
 
       // Show success message but DON'T navigate yet
       // Let the useEffect handle navigation after state updates
       showSnackbar(res.message || "Login successful!", "success");
-      
+
       // Navigation will happen automatically via useEffect
       // This prevents the white flash
     } catch (error) {
@@ -142,6 +143,35 @@ export default function Login() {
         overflow: "hidden",
       }}
     >
+      {/* Subtle Back to Home Button */}
+      <Button
+        onClick={() => navigate("/")}
+        startIcon={<ArrowBackIcon />}
+        sx={{
+          position: "absolute",
+          top: { xs: 16, md: 24 },
+          left: { xs: 16, md: 24 },
+          color: "text.secondary",
+          textTransform: "none",
+          fontSize: { xs: 14, md: 15 },
+          fontWeight: 500,
+          zIndex: 10,
+          transition: "all 0.2s ease-in-out",
+          "&:hover": {
+            color: "primary.main",
+            backgroundColor: "rgba(255, 255, 255, 0.15)",
+            transform: "translateX(-2px)",
+          },
+        }}
+      >
+        <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+          Back to Home
+        </Box>
+        <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>
+          Home
+        </Box>
+      </Button>
+
       <Box
         sx={{ width: "100%", maxWidth: 400, position: "relative", zIndex: 1 }}
       >
