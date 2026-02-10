@@ -34,7 +34,7 @@ const Leads = ({ toggleDrawer }) => {
       </Box>
 
       {getChatHistory ? (
-        <Card elevation={3}>
+        <Card elevation={0}>
           <CardContent sx={{ py: 6, textAlign: "center" }}>
             <CircularProgress sx={{ mb: 2 }} size={48} />
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
@@ -46,7 +46,7 @@ const Leads = ({ toggleDrawer }) => {
           </CardContent>
         </Card>
       ) : leads.length === 0 ? (
-        <Card elevation={3}>
+        <Card elevation={0}>
           <CardContent sx={{ py: 6, textAlign: "center" }}>
             <Chat
               sx={{
@@ -68,7 +68,7 @@ const Leads = ({ toggleDrawer }) => {
           {leads.map((user) => (
             <Card
               key={user?.userId}
-              elevation={2}
+              elevation={0}
               sx={{
                 transition: "box-shadow 0.3s ease",
                 "&:hover": {

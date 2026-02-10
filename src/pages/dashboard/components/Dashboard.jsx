@@ -344,7 +344,7 @@ export default function Dashboard() {
             </Box>
 
             <Card
-              elevation={isSearchFocused ? 8 : 4}
+              elevation={isSearchFocused ? 8 : 0}
               sx={{
                 transition: "all 0.3s ease",
                 transform: isSearchFocused ? "scale(1.02)" : "scale(1)",

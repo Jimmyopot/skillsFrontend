@@ -38,7 +38,7 @@ const Profile = () => {
     return (
       <Stack spacing={3}>
         {/* Profile Card */}
-        <Card elevation={3}>
+        <Card elevation={0}>
           <Box
             sx={{
               p: 2,

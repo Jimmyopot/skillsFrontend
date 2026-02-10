@@ -33,27 +33,19 @@ const testimonials = [
 ];
 
 const communityMembers = [
-  {
-    name: "Alex",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-  },
-  {
-    name: "Maria",
-    avatar:
-      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face",
-  },
-  {
-    name: "James",
-    avatar:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-  },
-  {
-    name: "Lisa",
-    avatar:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
-  },
+  { name: "Onuko Calvin" },
+  { name: "James Opot" },
+  { name: "Philly Onuko" },
+  { name: "Mercy Kayah" },
 ];
+
+const getInitials = (name) => {
+  return name
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+};
 
 export function ReadyToGetStarted() {
   const navigate = useNavigate();
@@ -193,7 +185,6 @@ export function ReadyToGetStarted() {
               {communityMembers.map((member, index) => (
                 <Avatar
                   key={index}
-                  src={member.avatar}
                   alt={member.name}
                   sx={{
                     width: 40,
@@ -201,8 +192,13 @@ export function ReadyToGetStarted() {
                     border: "2px solid #fff",
                     boxShadow: 1,
                     ml: index === 0 ? 0 : -1.5,
+                    bgcolor: "gray",
+                    fontSize: 14,
+                    fontWeight: 600,
                   }}
-                />
+                >
+                  {getInitials(member.name)}
+                </Avatar>
               ))}
             </Box>
             <Box>
@@ -214,7 +210,7 @@ export function ReadyToGetStarted() {
                   component="span"
                   sx={{ color: "success.main", fontWeight: 700 }}
                 >
-                  50,000
+                  50+
                 </Box>
               </Typography>
               <Typography sx={{ fontSize: 12, color: "grey.700" }}>
@@ -330,7 +326,7 @@ export function ReadyToGetStarted() {
             >
               Join NipeNikupe
             </Button>
-            <Button
+            {/* <Button
               variant="outlined"
               size="large"
               sx={{
@@ -345,7 +341,7 @@ export function ReadyToGetStarted() {
               }}
             >
               Learn More
-            </Button>
+            </Button> */}
           </Box>
         </Box>
       </Box>

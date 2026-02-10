@@ -1,6 +1,7 @@
-import { Chat, Handshake, LocationOn } from '@mui/icons-material';
-import { Box, Button, Card, CardContent, CircularProgress, Stack, Typography } from '@mui/material';
-import React from 'react'
+import { Chat, Handshake, LocationOn, People } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, CircularProgress, Stack, Typography, Tabs, Tab } from '@mui/material';
+import React, { useState } from 'react'
+import Leads from './Leads';
 
 const Suggestedmatches = ({ searchResultsRef,
     searchQuery,
@@ -8,30 +9,57 @@ const Suggestedmatches = ({ searchResultsRef,
     searchUsersBySkillAndCounty,
     filteredUsers, handleClearSearch,
     toggleDrawer }) => {
+  
+  const [tabValue, setTabValue] = useState(0);
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
   return (
     <Box ref={searchResultsRef}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-      >
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          {searchQuery || selectedCounty !== "All Counties"
-            ? "Search Results"
-            : "Suggested Matches"}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {searchUsersBySkillAndCounty
-            ? "Searching..."
-            : `${filteredUsers.length} users found`}
-        </Typography>
+      {/* Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, mx: 0, mt: 0 }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={handleTabChange} 
+          aria-label="matches tabs"
+          sx={{ 
+            '& .MuiTabs-indicator': {
+              height: 3,
+            }
+          }}
+        >
+          <Tab label="Suggested Matches" sx={{ textTransform: 'none', fontWeight: 600, }} />
+          <Tab label="My Leads" sx={{ textTransform: 'none', fontWeight: 600 }} />
+        </Tabs>
       </Box>
 
+      {/* Tab Content */}
+      {tabValue === 0 ? (
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: 600 }}>
+              {searchQuery || selectedCounty !== "All Counties"
+                ? "Search Results"
+                : "Suggested Matches"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {searchUsersBySkillAndCounty
+                ? "Searching..."
+                : `${filteredUsers.length} users found`}
+            </Typography>
+          </Box>
+
       {searchUsersBySkillAndCounty ? (
-        <Card elevation={3}>
+        <Card elevation={0}>
           <CardContent sx={{ py: 6, textAlign: "center" }}>
             <CircularProgress sx={{ mb: 2 }} size={48} />
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
@@ -43,7 +71,7 @@ const Suggestedmatches = ({ searchResultsRef,
           </CardContent>
         </Card>
       ) : filteredUsers.length === 0 ? (
-        <Card elevation={3}>
+        <Card elevation={0}>
           <CardContent sx={{ py: 6, textAlign: "center" }}>
             <People
               sx={{
@@ -73,7 +101,7 @@ const Suggestedmatches = ({ searchResultsRef,
           {filteredUsers.map((user) => (
             <Card
               key={user?.userId || user?.id}
-              elevation={2}
+              elevation={0}
               sx={{
                 transition: "box-shadow 0.3s ease",
                 "&:hover": {
@@ -98,7 +126,7 @@ const Suggestedmatches = ({ searchResultsRef,
                       justifyContent: "center",
                       gap: 2,
                       flex: 1,
-                      height: 120,
+                      height: 100,
                     }}
                   >
                     <Box
@@ -151,7 +179,7 @@ const Suggestedmatches = ({ searchResultsRef,
                           {user?.country || "Kenya"}
                         </Typography>
                       </Box>
-                      <Box
+                      {/* <Box
                         sx={{
                           display: "flex",
                           alignItems: "center",
@@ -162,7 +190,7 @@ const Suggestedmatches = ({ searchResultsRef,
                         <Typography variant="body2" color="text.secondary">
                           📩 {user?.email || user?.contact}
                         </Typography>
-                      </Box>
+                      </Box> */}
                     </Box>
                   </Box>
 
@@ -208,39 +236,11 @@ const Suggestedmatches = ({ searchResultsRef,
                     </Stack>
                   </Box>
 
-                  {/* Actions */}
-                  {/* <Box
-                              sx={{
-                                display: "flex",
-                                flexDirection: { xs: "row", md: "column" },
-                                gap: 1,
-                                justifyContent: { md: "center" },
-                              }}
-                            >
-                              <Button
-                                variant="contained"
-                                size="small"
-                                startIcon={<Handshake />}
-                                sx={{ flex: { xs: 1, md: "none" } }}
-                              >
-                                Request Trade
-                              </Button>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<Chat />}
-                                sx={{ flex: { xs: 1, md: "none" } }}
-                                onClick={toggleDrawer(true)}
-                              >
-                                Message
-                              </Button>
-                            </Box> */}
                   <Stack
                     direction={{ xs: "column", md: "column" }} // column on mobile, row on desktop
                     spacing={1}
                     alignItems="center" // centers when row
                     justifyContent="center"
-                    // sx={{ mt: 1 }}
                   >
                     <Button
                       variant="contained"
@@ -279,6 +279,10 @@ const Suggestedmatches = ({ searchResultsRef,
             </Card>
           ))}
         </Stack>
+      )}
+        </>
+      ) : (
+        <Leads toggleDrawer={toggleDrawer} />
       )}
     </Box>
   );
