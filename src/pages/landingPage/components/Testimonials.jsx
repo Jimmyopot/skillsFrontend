@@ -116,7 +116,7 @@ export function TestimonialsSection() {
                 </Typography>
 
                 {/* Author */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                {/* <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Box
                     component="img"
                     src={testimonial.image || "/placeholder.svg"}
@@ -139,7 +139,7 @@ export function TestimonialsSection() {
                       {testimonial.role}
                     </Typography>
                   </Box>
-                </Box>
+                </Box> */}
               </CardContent>
             </Card>
           ))}

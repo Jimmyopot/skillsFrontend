@@ -221,9 +221,11 @@ const Suggestedmatches = ({ searchResultsRef,
                       </Box>
 
                       {/* Skills */}
-                      <Box sx={{ 
-                        width: { xs: "100%", md: "60%" },
-                       }}>
+                      <Box
+                        sx={{
+                          width: { xs: "100%", md: "60%" },
+                        }}
+                      >
                         <Stack spacing={2}>
                           {/* Optional: Skills Offered */}
                           {user.skillsOffered && (
@@ -263,9 +265,14 @@ const Suggestedmatches = ({ searchResultsRef,
                           )}
                         </Stack>
 
-                        <Box sx={{ mt: 2, display: "flex", gap: 2, flexWrap: "wrap",}}>
-                          
-
+                        <Box
+                          sx={{
+                            mt: 2,
+                            display: "flex",
+                            gap: 2,
+                            flexWrap: "wrap",
+                          }}
+                        >
                           <Button
                             variant="contained"
                             size="small"
@@ -287,7 +294,6 @@ const Suggestedmatches = ({ searchResultsRef,
                             onClick={() => handleOpenRatingDialog(user)}
                             sx={{
                               textTransform: "none",
-                              // borderColor: "#e0e0e0",
                               borderColor: "gray",
                               color: "text.secondary",
                               display: "flex",
@@ -295,21 +301,16 @@ const Suggestedmatches = ({ searchResultsRef,
                               gap: 0.5,
                               "&:hover": {
                                 borderColor: "#FFB300",
-                                // backgroundColor: "rgba(255, 179, 0, 0.04)",
+                                color: "#FFB300",
+                                "& .MuiSvgIcon-root": {
+                                  color: "#FFB300",
+                                },
                               },
                             }}
                           >
-                            <Box sx={{ display: "flex", gap: 0.25, mr: 0.5 }}>
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <StarBorder
-                                  key={star}
-                                  sx={{ fontSize: "0.875rem" }}
-                                />
-                              ))}
-                            </Box>
+                            <StarBorder sx={{ fontSize: "1rem" }} />
                             Rate
                           </Button>
-
                         </Box>
                       </Box>
                     </Box>

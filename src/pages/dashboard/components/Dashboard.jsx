@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Box,
   Button,
@@ -68,17 +68,23 @@ export default function Dashboard() {
   } = useSelector((state) => state.CommonReducer);
 
   // Transform API data to match component structure
-  const SKILLS_DATABASE = getSkillsGroupedByCategoryResp || {};
+  const SKILLS_DATABASE = useMemo(
+    () => getSkillsGroupedByCategoryResp || {},
+    [getSkillsGroupedByCategoryResp]
+  );
 
   // Flatten all skills for autocomplete
-  const ALL_SKILLS = Object.entries(SKILLS_DATABASE).flatMap(
-    ([category, skills]) =>
-      (skills || []).map((skillObj) => ({
-        skill: skillObj.name,
-        category: category,
-        icon: CATEGORY_ICONS[category] || "🔹",
-        id: skillObj.id,
-      }))
+  const ALL_SKILLS = useMemo(
+    () =>
+      Object.entries(SKILLS_DATABASE).flatMap(([category, skills]) =>
+        (skills || []).map((skillObj) => ({
+          skill: skillObj.name,
+          category: category,
+          icon: CATEGORY_ICONS[category] || "🔹",
+          id: skillObj.id,
+        }))
+      ),
+    [SKILLS_DATABASE]
   );
 
   // Search users using API based on search query and county

@@ -5,6 +5,7 @@ import {
   Email,
   Phone,
   Star,
+  StarBorder,
   Handshake,
   People,
   TrendingUp,
@@ -15,6 +16,7 @@ import stringAvatar from '../../../common/StringAvatar';
 import { useState, useEffect } from 'react';
 import UpdateProfilePopup from './UpdateProfilePopup';
 import { getRecentSearchedSkillsAction } from '../../../common/state/CommonActions';
+import { getRatingStatsAction } from '../state/DashboardActions';
 
 const Profile = () => {
   const [open, setOpen] = useState(false);
@@ -22,11 +24,18 @@ const Profile = () => {
 
     const { user } = useSelector((state) => state.AuthReducer);
     const { getRecentSearchedSkills, getRecentSearchedSkillsResp } = useSelector((state) => state.CommonReducer);
+    const { getRatingStats, getRatingStatsResp } = useSelector((state) => state.DashboardReducer);
 
     useEffect(() => {
       // Fetch recent searched skills when component mounts
       dispatch(getRecentSearchedSkillsAction());
-    }, [dispatch]);
+      
+      // Fetch rating stats for current user
+      if (user?.userId || user?.id) {
+        const userId = user.userId || user.id;
+        dispatch(getRatingStatsAction(userId));
+      }
+    }, [dispatch, user?.userId, user?.id]);
 
     const handleClickOpen = () => {
       setOpen(true);
@@ -104,6 +113,43 @@ const Profile = () => {
                     : user?.localityOrArea}
                 </Typography>
               </Box>
+
+              {/* Rating Display - Compact */}
+              {getRatingStats ? (
+                <Box sx={{ mt: 0.5 }}>
+                  <CircularProgress size={16} />
+                </Box>
+              ) : getRatingStatsResp?.data && getRatingStatsResp.data.averageRating > 0 ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    mt: 0.5,
+                  }}
+                >
+                  {Array.from({ length: Math.round(getRatingStatsResp.data.averageRating) }).map((_, index) => (
+                    <Star key={index} sx={{ fontSize: 16, color: "#FFB300" }} />
+                  ))}
+                  <Typography variant="body2" color="text.secondary">
+                    {getRatingStatsResp.data.averageRating.toFixed(1)}
+                  </Typography>
+                </Box>
+              ) : getRatingStatsResp?.data && getRatingStatsResp.data.averageRating === 0 ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    mt: 0.5,
+                  }}
+                >
+                  <StarBorder sx={{ fontSize: 16, color: "#9e9e9e" }} />
+                  <Typography variant="body2" color="text.secondary">
+                    0
+                  </Typography>
+                </Box>
+              ) : null}
             </Box>
 
             <Box sx={{ pt: 2 }}>
@@ -354,7 +400,7 @@ const Profile = () => {
                   <Typography variant="body2">Rating</Typography>
                 </Box>
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  0.0
+                  {getRatingStatsResp?.data?.averageRating?.toFixed(1) || "0.0"}
                 </Typography>
               </Box>
             </Stack>
