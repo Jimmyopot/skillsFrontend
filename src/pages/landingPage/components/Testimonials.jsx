@@ -43,7 +43,7 @@ export function TestimonialsSection() {
     >
       <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
         <Box sx={{ textAlign: "center", mb: 8 }}>
-          <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2 }}>
+          <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2, color: "#213547" }}>
             What Our Community Says
           </Typography>
           <Typography

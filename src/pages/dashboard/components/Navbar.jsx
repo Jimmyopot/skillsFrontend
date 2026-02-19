@@ -96,7 +96,7 @@ const Navbar = () => {
         borderColor: "divider",
       }}
     >
-      <Toolbar sx={{ px: { xs: 2, sm: 4 }, py: 1 }}>
+      <Toolbar sx={{ px: { xs: 2, sm: 4 }, py: 0 }}>
         {/* Logo Section */}
         <Box
           sx={{ display: "flex", alignItems: "center", gap: 1, flexGrow: 1 }}
@@ -263,7 +263,7 @@ const Navbar = () => {
               </Box>
 
               {/* Menu Items */}
-              <MenuItem onClick={handleDropdownClose}>
+              {/* <MenuItem onClick={handleDropdownClose}>
                 <ListItemIcon>
                   <PersonIcon fontSize="small" />
                 </ListItemIcon>
@@ -282,7 +282,7 @@ const Navbar = () => {
                   <HelpIcon fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary="Help & Support" />
-              </MenuItem>
+              </MenuItem> */}
 
               <Divider />
 

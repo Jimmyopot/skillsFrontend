@@ -125,7 +125,8 @@ export function Navbar() {
           sx={{
             display: { xs: "none", md: "flex" },
             alignItems: "center",
-            gap: 4,
+            gap: 1,
+            whiteSpace: "nowrap",
           }}
         >
           {navLinks.map((link) => (
@@ -170,20 +171,20 @@ export function Navbar() {
         </Box>
 
         {/* CTA Button */}
-        <Box sx={{ display: { xs: "none", md: "block" } }}>
+        <Box sx={{ display: { xs: "none", md: "block" }, whiteSpace: "nowrap" }}>
           <Button
             variant="outlined"
             sx={{
               textTransform: "none",
               fontWeight: 600,
-              color: isScrolled ? "text.primary" : "#FFFFFF",
-              borderColor: isScrolled ? "secondary.main" : "#FFFFFF",
+              color: isScrolled ? "primary.main" : "#FFFFFF",
+              borderColor: isScrolled ? "primary.main" : "#FFFFFF",
               transition: "all 0.3s ease",
               "&:hover": {
-                backgroundColor: isScrolled
-                  ? "rgba(0, 0, 0, 0.04)"
-                  : "rgba(255, 255, 255, 0.1)",
-                borderColor: isScrolled ? "secondary.dark" : "#FFFFFF",
+                // backgroundColor: isScrolled
+                //   ? "rgba(0, 0, 0, 0.04)"
+                //   : "rgba(255, 255, 255, 0.1)",
+                borderColor: isScrolled ? "primary.main" : "#FFFFFF",
               },
             }}
             onClick={goToLogin}
@@ -246,9 +247,15 @@ export function Navbar() {
           {navLinks.map((link) => (
             <ListItem key={link.href} disablePadding>
               <ListItemButton
-                component="a"
-                href={link.href}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const id = link.href.replace("#", "");
+                  const element = document.getElementById(id);
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }
+                  setIsMenuOpen(false);
+                }}
               >
                 <ListItemText
                   primary={link.label}
@@ -265,6 +272,7 @@ export function Navbar() {
               color="primary"
               fullWidth
               sx={{ mt: 1, textTransform: "none", fontWeight: 600 }}
+              onClick={goToSignUp}
             >
               Get Started
             </Button>
@@ -272,9 +280,10 @@ export function Navbar() {
           <ListItem>
             <Button
               variant="outlined"
-              color="secondary"
+              color="primary"
               fullWidth
               sx={{ mt: 1, textTransform: "none", fontWeight: 600 }}
+              onClick={goToLogin}
             >
               Login
             </Button>

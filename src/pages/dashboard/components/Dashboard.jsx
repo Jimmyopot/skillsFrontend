@@ -56,6 +56,21 @@ export default function Dashboard() {
   const suggestionsPaperRef = useRef(null);
   const searchResultsRef = useRef(null);
 
+  // Get time-based greeting
+  const getTimeBasedGreeting = () => {
+    const hour = new Date().getHours();
+
+    if (hour >= 5 && hour < 12) {
+      return "Good morning";
+    } else if (hour >= 12 && hour < 17) {
+      return "Good afternoon";
+    } else if (hour >= 17 && hour < 21) {
+      return "Good evening";
+    } else {
+      return "Good night";
+    }
+  };
+
   const { user } = useSelector((state) => state.AuthReducer);
 
   const {
@@ -70,7 +85,7 @@ export default function Dashboard() {
   // Transform API data to match component structure
   const SKILLS_DATABASE = useMemo(
     () => getSkillsGroupedByCategoryResp || {},
-    [getSkillsGroupedByCategoryResp]
+    [getSkillsGroupedByCategoryResp],
   );
 
   // Flatten all skills for autocomplete
@@ -82,9 +97,9 @@ export default function Dashboard() {
           category: category,
           icon: CATEGORY_ICONS[category] || "🔹",
           id: skillObj.id,
-        }))
+        })),
       ),
-    [SKILLS_DATABASE]
+    [SKILLS_DATABASE],
   );
 
   // Search users using API based on search query and county
@@ -96,7 +111,7 @@ export default function Dashboard() {
       searchUsersBySkillAndCountyAction({
         skill,
         county,
-      })
+      }),
     );
 
     // Smooth scroll to search results section after a short delay
@@ -115,7 +130,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (searchQuery.trim() && isSearchFocused) {
       const filtered = ALL_SKILLS.filter((item) =>
-        item.skill.toLowerCase().includes(searchQuery.toLowerCase())
+        item.skill.toLowerCase().includes(searchQuery.toLowerCase()),
       ).slice(0, 8); // Limit suggestions
       setFilteredSkills(filtered);
       setShowSuggestions(filtered.length > 0);
@@ -129,14 +144,16 @@ export default function Dashboard() {
   useEffect(() => {
     dispatch(getSkillsGroupedByCategoryAction());
     dispatch(getAllCountiesAction());
-    
+
     // Get suggested matches for the current user (API returns 3 matches automatically)
     if (user?.userId || user?.id) {
       const userId = user.userId || user.id;
-      
-      dispatch(getSuggestedMatchesAction({
-        userId,
-      }));
+
+      dispatch(
+        getSuggestedMatchesAction({
+          userId,
+        }),
+      );
     }
   }, [dispatch, user?.userId, user?.id]);
 
@@ -144,21 +161,22 @@ export default function Dashboard() {
   useEffect(() => {
     if (searchUsersBySkillAndCountyResp) {
       console.log("Search API Response:", searchUsersBySkillAndCountyResp);
-      
+
       // Transform search results to include skills in the same format
-      const transformedResults = searchUsersBySkillAndCountyResp.map(user => {
+      const transformedResults = searchUsersBySkillAndCountyResp.map((user) => {
         console.log("User object from search:", user);
-        
+
         // Extract skills from various possible field names
-        const skills = user.skillsOffered 
-          || user.allUserSkills 
-          || user.allSkills 
-          || user.skills 
-          || user.userSkills
-          || [];
-        
+        const skills =
+          user.skillsOffered ||
+          user.allUserSkills ||
+          user.allSkills ||
+          user.skills ||
+          user.userSkills ||
+          [];
+
         console.log("Extracted skills:", skills);
-        
+
         return {
           ...user,
           skillsOffered: Array.isArray(skills) ? skills : [skills],
@@ -166,7 +184,7 @@ export default function Dashboard() {
           fullName: user.fullName || user.name,
         };
       });
-      
+
       console.log("Transformed Results:", transformedResults);
       setFilteredUsers(transformedResults);
     }
@@ -174,30 +192,36 @@ export default function Dashboard() {
 
   // Set initial users when getSuggestedMatches response is available
   useEffect(() => {
-    if (getSuggestedMatchesResp?.suggestedMatches && getSuggestedMatchesResp.suggestedMatches.length > 0) {
+    if (
+      getSuggestedMatchesResp?.suggestedMatches &&
+      getSuggestedMatchesResp.suggestedMatches.length > 0
+    ) {
       // Transform API response to match component structure
-      const transformedUsers = getSuggestedMatchesResp.suggestedMatches.map(match => ({
-        userId: match.userId,
-        id: match.userId,
-        name: match.fullName,
-        fullName: match.fullName,
-        location: match.localityOrArea 
-          ? `${match.cityOrTown}, ${match.localityOrArea}` 
-          : match.cityOrTown,
-        county: match.cityOrTown,
-        cityOrTown: match.cityOrTown,
-        country: match.country,
-        email: match.email,
-        contact: match.email,
-        phoneNumber: match.phoneNumber,
-        skillsOffered: match.allUserSkills || match.allSkills || [match.matchedSkill],
-        skillsNeeded: [],
-        rating: 0,
-        completedTrades: 0,
-        profilePicture: null,
-        matchType: match.matchType,
-        matchedSkill: match.matchedSkill,
-      }));
+      const transformedUsers = getSuggestedMatchesResp.suggestedMatches.map(
+        (match) => ({
+          userId: match.userId,
+          id: match.userId,
+          name: match.fullName,
+          fullName: match.fullName,
+          location: match.localityOrArea
+            ? `${match.cityOrTown}, ${match.localityOrArea}`
+            : match.cityOrTown,
+          county: match.cityOrTown,
+          cityOrTown: match.cityOrTown,
+          country: match.country,
+          email: match.email,
+          contact: match.email,
+          phoneNumber: match.phoneNumber,
+          skillsOffered: match.allUserSkills ||
+            match.allSkills || [match.matchedSkill],
+          skillsNeeded: [],
+          rating: 0,
+          completedTrades: 0,
+          profilePicture: null,
+          matchType: match.matchType,
+          matchedSkill: match.matchedSkill,
+        }),
+      );
       setFilteredUsers(transformedUsers);
     }
   }, [getSuggestedMatchesResp]);
@@ -258,30 +282,36 @@ export default function Dashboard() {
     setSelectedCounty("All Counties");
 
     // Reset to show suggested matches
-    if (getSuggestedMatchesResp?.suggestedMatches && getSuggestedMatchesResp.suggestedMatches.length > 0) {
+    if (
+      getSuggestedMatchesResp?.suggestedMatches &&
+      getSuggestedMatchesResp.suggestedMatches.length > 0
+    ) {
       // Transform API response to match component structure
-      const transformedUsers = getSuggestedMatchesResp.suggestedMatches.map(match => ({
-        userId: match.userId,
-        id: match.userId,
-        name: match.fullName,
-        fullName: match.fullName,
-        location: match.localityOrArea 
-          ? `${match.cityOrTown}, ${match.localityOrArea}` 
-          : match.cityOrTown,
-        county: match.cityOrTown,
-        cityOrTown: match.cityOrTown,
-        country: match.country,
-        email: match.email,
-        contact: match.email,
-        phoneNumber: match.phoneNumber,
-        skillsOffered: match.allUserSkills || match.allSkills || [match.matchedSkill],
-        skillsNeeded: [],
-        rating: 0,
-        completedTrades: 0,
-        profilePicture: null,
-        matchType: match.matchType,
-        matchedSkill: match.matchedSkill,
-      }));
+      const transformedUsers = getSuggestedMatchesResp.suggestedMatches.map(
+        (match) => ({
+          userId: match.userId,
+          id: match.userId,
+          name: match.fullName,
+          fullName: match.fullName,
+          location: match.localityOrArea
+            ? `${match.cityOrTown}, ${match.localityOrArea}`
+            : match.cityOrTown,
+          county: match.cityOrTown,
+          cityOrTown: match.cityOrTown,
+          country: match.country,
+          email: match.email,
+          contact: match.email,
+          phoneNumber: match.phoneNumber,
+          skillsOffered: match.allUserSkills ||
+            match.allSkills || [match.matchedSkill],
+          skillsNeeded: [],
+          rating: 0,
+          completedTrades: 0,
+          profilePicture: null,
+          matchType: match.matchType,
+          matchedSkill: match.matchedSkill,
+        }),
+      );
       setFilteredUsers(transformedUsers);
     } else {
       // Fallback to empty array if no API data available
@@ -338,13 +368,14 @@ export default function Dashboard() {
                 component="h1"
                 sx={{
                   fontWeight: "bold",
-                  mb: 2,
-                  fontSize: { xs: "2rem", md: "3rem" },
+                  color: "#213547",
+                  mb: 1,
+                  fontSize: 32,
                 }}
               >
-                Welcome, {user?.fullName.split(" ")[0]}! 👋
+                {getTimeBasedGreeting()}, {user?.fullName.split(" ")[0]}! 👋
               </Typography>
-              <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+              <Typography sx={{ color: "grey.600", mb: 3 }}>
                 Start your skill exchange journey here
               </Typography>
             </Box>
@@ -546,7 +577,7 @@ export default function Dashboard() {
 
                         const searchTerm = inputValue.toLowerCase();
                         return options.filter((option) =>
-                          option.toLowerCase().includes(searchTerm)
+                          option.toLowerCase().includes(searchTerm),
                         );
                       }}
                       disabled={getAllCounties}

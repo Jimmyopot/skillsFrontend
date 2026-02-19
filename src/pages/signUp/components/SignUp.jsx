@@ -353,11 +353,11 @@ export default function NipeNikupeRegistration() {
           <Box sx={{ textAlign: "center", mb: 4 }}>
             <Typography
               variant="h3"
-              sx={{ fontWeight: "bold", mb: 1, color: "#0A6802" }}
+              sx={{ fontWeight: "bold", mb: 1, color: "#213547", fontSize: 32, }}
             >
               Welcome to NipeNikupe
             </Typography>
-            <Typography variant="h6" sx={{ color: "grey.600" }}>
+            <Typography sx={{ color: "grey.600" }}>
               Join our community of skill exchangers and start bartering your
               talents today!
             </Typography>
