@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -21,12 +21,21 @@ import {
   Shield,
   ThumbUp,
 } from '@mui/icons-material';
+import { useDispatch, useSelector } from 'react-redux';
+import { submitRatingAction } from '../state/DashboardActions';
+import { clearSubmitRatingState } from '../state/DashboardSlice';
+import { useSnackbar } from '../../../common/snackbar/SnackbarContext';
 
 const RatingDialog = ({ open, onClose, user }) => {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [selectedFeedback, setSelectedFeedback] = useState([]);
   const [comment, setComment] = useState('');
+  const dispatch = useDispatch();
+  const { showSnackbar } = useSnackbar();
+  const onCloseRef = useRef(onClose);
+
+  const { submitRating } = useSelector((state) => state.DashboardReducer || {});
 
   const feedbackOptions = [
     { label: 'Great communicator', icon: <ChatBubbleOutline sx={{ fontSize: 16 }} /> },
@@ -44,30 +53,92 @@ const RatingDialog = ({ open, onClose, user }) => {
     );
   };
 
-  const handleSubmit = () => {
-    // Handle rating submission
-    console.log({
-      userId: user?.userId || user?.id,
+  const resetForm = () => {
+    setRating(0);
+    setHoveredRating(0);
+    setSelectedFeedback([]);
+    setComment('');
+  };
+
+  const handleSubmit = async () => {
+    const targetUserId = String(user?.userId || user?.id || '');
+    
+    console.log('Submit Rating - User Data:', user);
+    console.log('Submit Rating - Target User ID:', targetUserId);
+    console.log('Submit Rating - Current Rating:', rating);
+    
+    if (!targetUserId) {
+      showSnackbar('Missing user information. Please try again.', 'error');
+      return;
+    }
+    if (rating === 0) {
+      showSnackbar('Please select a star rating before submitting.', 'warning');
+      return;
+    }
+
+    // Build payload matching Postman example - only include optional fields if they have values
+    const payload = {
       rating,
-      feedback: selectedFeedback,
-      comment,
-    });
-    onClose();
+      targetUserId,
+    };
+
+    // Only add quickFeedback if user selected at least one
+    if (selectedFeedback.length > 0) {
+      payload.quickFeedback = selectedFeedback.join(', ');
+    }
+
+    // Only add comment if user wrote something
+    const trimmedComment = comment.trim();
+    if (trimmedComment.length > 0) {
+      payload.comment = trimmedComment;
+    }
+
+    console.log('Submit Rating - Payload:', payload);
+
+    try {
+      const response = await dispatch(
+        submitRatingAction(payload)
+      ).unwrap();
+
+      console.log('Submit Rating - Response:', response);
+      
+      showSnackbar(
+        response?.message || 'Rating submitted successfully.',
+        'success'
+      );
+      dispatch(clearSubmitRatingState());
+      resetForm();
+      if (onCloseRef.current) {
+        onCloseRef.current();
+      }
+    } catch (error) {
+      console.error('Submit Rating - Error:', error);
+      const errorMessage =
+        typeof error === 'string'
+          ? error
+          : error?.message || 'Failed to submit rating.';
+      showSnackbar(errorMessage, 'error');
+      dispatch(clearSubmitRatingState());
+    }
   };
 
   const handleCancel = () => {
-    setRating(0);
-    setSelectedFeedback([]);
-    setComment('');
+    resetForm();
     onClose();
   };
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  
 
   if (!user) return null;
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleCancel}
       maxWidth="xs"
       fullWidth
       PaperProps={{
@@ -81,7 +152,7 @@ const RatingDialog = ({ open, onClose, user }) => {
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             Rate {user?.fullName}
           </Typography>
-          <IconButton onClick={onClose} size="small">
+          <IconButton onClick={handleCancel} size="small">
             <CloseIcon />
           </IconButton>
         </Box>
@@ -124,16 +195,28 @@ const RatingDialog = ({ open, onClose, user }) => {
         {/* Overall Rating */}
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, fontSize: '0.875rem' }}>
-            Overall Rating
+            Overall Rating {rating > 0 && `(${rating} star${rating > 1 ? 's' : ''})`}
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             {[1, 2, 3, 4, 5].map((star) => (
               <IconButton
                 key={star}
-                onClick={() => setRating(star)}
+                onClick={() => {
+                  console.log('Star clicked:', star);
+                  setRating(star);
+                }}
                 onMouseEnter={() => setHoveredRating(star)}
                 onMouseLeave={() => setHoveredRating(0)}
-                sx={{ p: 0.5 }}
+                disableRipple
+                sx={{ 
+                  p: 0.5,
+                  '&:focus': {
+                    outline: 'none',
+                  },
+                  '&:focus-visible': {
+                    outline: 'none',
+                  },
+                }}
               >
                 {(hoveredRating || rating) >= star ? (
                   <Star sx={{ fontSize: 32, color: '#FFB300' }} />
@@ -202,7 +285,7 @@ const RatingDialog = ({ open, onClose, user }) => {
             fullWidth
             variant="contained"
             onClick={handleSubmit}
-            disabled={rating === 0}
+            // disabled={rating === 0 || submitRating}
             sx={{
               bgcolor: 'success.main',
               textTransform: 'none',
@@ -213,11 +296,12 @@ const RatingDialog = ({ open, onClose, user }) => {
               },
             }}
           >
-            Submit Rating
+            {submitRating ? 'Submitting...' : 'Submit Rating'}
           </Button>
           <Button
             variant="outlined"
             onClick={handleCancel}
+            disabled={submitRating}
             sx={{
               textTransform: 'none',
               py: 1.2,
