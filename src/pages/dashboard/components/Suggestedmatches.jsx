@@ -139,19 +139,17 @@ const Suggestedmatches = ({ searchResultsRef,
                       sx={{
                         display: "flex",
                         flexDirection: { xs: "column", md: "row" },
-                        // gap: 3,
+                        gap: 3,
                       }}
                     >
                       {/* User Avatar & Info */}
-                      {/* <Box sx={{ display: "flex", gap: 2, flex: 1, height: 130 }}> */}
                       <Box
                         sx={{
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           gap: 2,
-                          // flex: 1,
-                          width: { xs: "100%", md: "40%" },
+                          flex: 1,
                           height: 100,
                         }}
                       >
@@ -205,30 +203,13 @@ const Suggestedmatches = ({ searchResultsRef,
                               {user?.country || "Kenya"}
                             </Typography>
                           </Box>
-                          {/* <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 2,
-                          fontSize: "0.875rem",
-                        }}
-                      >
-                        <Typography variant="body2" color="text.secondary">
-                          📩 {user?.email || user?.contact}
-                        </Typography>
-                      </Box> */}
                         </Box>
                       </Box>
 
                       {/* Skills */}
-                      <Box
-                        sx={{
-                          width: { xs: "100%", md: "60%" },
-                        }}
-                      >
+                      <Box sx={{ flex: 1 }}>
                         <Stack spacing={2}>
-                          {/* Optional: Skills Offered */}
-                          {user.skillsOffered && (
+                          {user.skillsOffered && user.skillsOffered.length > 0 && (
                             <Box>
                               <Typography
                                 variant="caption"
@@ -264,55 +245,53 @@ const Suggestedmatches = ({ searchResultsRef,
                             </Box>
                           )}
                         </Stack>
+                      </Box>
 
-                        <Box
+                      {/* Actions */}
+                      <Stack
+                        direction={{ xs: "column", md: "column" }}
+                        spacing={1}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Button
+                          variant="contained"
+                          size="small"
+                          startIcon={<Chat />}
+                          onClick={toggleDrawer(true, user)}
                           sx={{
-                            mt: 2,
-                            display: "flex",
-                            gap: 2,
-                            flexWrap: "wrap",
+                            width: "100%",
+                            textTransform: "none",
                           }}
                         >
-                          <Button
-                            variant="contained"
-                            size="small"
-                            startIcon={<Chat />}
-                            onClick={toggleDrawer(true, user)}
-                            sx={{
-                              // width: "100%",
-                              // width: { xs: "100%", md: 140 }, // full width on mobile, fixed on desktop
-                              // height: 72,
-                              textTransform: "none",
-                            }}
-                          >
-                            Message
-                          </Button>
+                          Message
+                        </Button>
 
-                          <Button
-                            variant="outlined"
-                            size=""
-                            onClick={() => handleOpenRatingDialog(user)}
-                            sx={{
-                              textTransform: "none",
-                              borderColor: "gray",
-                              color: "text.secondary",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 0.5,
-                              "&:hover": {
-                                borderColor: "#FFB300",
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleOpenRatingDialog(user)}
+                          sx={{
+                            width: "100%",
+                            textTransform: "none",
+                            borderColor: "gray",
+                            color: "text.secondary",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            "&:hover": {
+                              borderColor: "#FFB300",
+                              color: "#FFB300",
+                              "& .MuiSvgIcon-root": {
                                 color: "#FFB300",
-                                "& .MuiSvgIcon-root": {
-                                  color: "#FFB300",
-                                },
                               },
-                            }}
-                          >
-                            <StarBorder sx={{ fontSize: "1rem" }} />
-                            Rate
-                          </Button>
-                        </Box>
-                      </Box>
+                            },
+                          }}
+                        >
+                          <StarBorder sx={{ fontSize: "1rem" }} />
+                          Rate
+                        </Button>
+                      </Stack>
                     </Box>
                   </CardContent>
                 </Card>
