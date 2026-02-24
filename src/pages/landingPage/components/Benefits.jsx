@@ -66,7 +66,7 @@ export function BenefitsSection() {
     >
       <Box sx={{ maxWidth: 1400, mx: "auto", px: 2 }}>
         <Box sx={{ textAlign: "center", mb: 8 }}>
-          <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2 }}>
+          <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2, color: "#213547" }}>
             Why Choose NipeNikupe?
           </Typography>
           <Typography

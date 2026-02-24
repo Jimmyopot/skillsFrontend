@@ -67,7 +67,7 @@ const Suggestedmatches = ({ searchResultsRef,
               mb: 2,
             }}
           >
-            <Typography variant="h5" sx={{ fontWeight: 600 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {searchQuery || selectedCounty !== "All Counties"
                 ? "Search Results"
                 : "Suggested Matches"}

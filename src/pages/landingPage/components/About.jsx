@@ -27,7 +27,7 @@ export function AboutSection() {
       <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
         {/* Section Header */}
         <Box sx={{ textAlign: "center", mb: 8 }}>
-          <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2 }}>
+          <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2, color: "#213547" }}>
             About{" "}
             <Box component="span" sx={{ color: "primary.main" }}>
               NipeNikupe
@@ -61,7 +61,7 @@ export function AboutSection() {
           <Box>
             <Typography
               variant="h4"
-              sx={{ fontWeight: "bold", mb: 3, color: "text.primary" }}
+              sx={{ fontWeight: "bold", mb: 3, color: "#213547", textAlign: { xs: "center", lg: "start" } }}
             >
               Our Story
             </Typography>
@@ -158,7 +158,7 @@ export function AboutSection() {
               fontWeight: "bold",
               textAlign: "center",
               mb: 5,
-              color: "text.primary",
+              color: "#213547",
             }}
           >
             Our Values
@@ -346,7 +346,7 @@ export function AboutSection() {
         >
           <Typography
             variant="h4"
-            sx={{ fontWeight: "bold", mb: 3, color: "text.primary" }}
+            sx={{ fontWeight: "bold", mb: 3, color: "#213547" }}
           >
             Our Mission
           </Typography>

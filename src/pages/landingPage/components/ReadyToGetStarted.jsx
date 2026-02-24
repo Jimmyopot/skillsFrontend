@@ -238,7 +238,7 @@ export function ReadyToGetStarted() {
               variant="h3"
               sx={{
                 fontWeight: "bold",
-                color: "grey.900",
+                color: "#213547",
                 mb: 1,
                 mt: 1,
                 lineHeight: 1.1,

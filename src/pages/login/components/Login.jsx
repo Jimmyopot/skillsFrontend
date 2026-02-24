@@ -180,14 +180,14 @@ export default function Login() {
             variant="h3"
             sx={{
               fontWeight: "bold",
-              color: "primary.main",
+              color: "#213547",
               mb: 1,
               fontSize: 32,
             }}
           >
             NipeNikupe
           </Typography>
-          <Typography sx={{ color: "text.secondary" }}>
+          <Typography sx={{ color: "grey.600" }}>
             Welcome back! Sign in to continue
           </Typography>
         </Box>
