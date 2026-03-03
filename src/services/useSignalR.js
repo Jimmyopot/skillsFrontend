@@ -100,6 +100,19 @@ export default function useSignalR({
       handlersRef.current.onTyping?.(payload);
     });
 
+    // Notification events
+    conn.on("NewNotification", (notification) => {
+      handlersRef.current.onNewNotification?.(notification);
+    });
+
+    conn.on("UnreadCountUpdate", (count) => {
+      handlersRef.current.onUnreadCountUpdate?.(count);
+    });
+
+    conn.on("AllNotificationsMarkedRead", () => {
+      handlersRef.current.onAllNotificationsMarkedRead?.();
+    });
+
     conn.onreconnecting((error) => {
       setConnectionState("reconnecting");
       handlersRef.current.onReconnecting?.(error);
