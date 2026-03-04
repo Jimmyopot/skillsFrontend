@@ -39,6 +39,7 @@ import {
 import { setSelectedChatFromNotification } from "../state/DashboardSlice";
 import useSignalR from "../../../services/useSignalR";
 import { config } from "../../../utils/config";
+// import NotificationBell from "./Notificationbell";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -337,6 +338,8 @@ const Navbar = () => {
               <NotificationsIcon sx={{ color: "primary.main" }} />
             </Badge>
           </IconButton>
+
+          {/* <NotificationBell /> */}
 
           {/* Notifications Menu */}
           <Menu

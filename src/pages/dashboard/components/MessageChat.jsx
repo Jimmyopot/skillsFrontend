@@ -59,7 +59,6 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Create chatPartner from selectedUser prop - STABLE reference using useMemo
   const chatPartner = useMemo(() => {
     if (!selectedUser) return null;
     return {
@@ -90,20 +89,15 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
   const [currentSessionId] = useState(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
-  // Get auth state from Redux
   const authState = useSelector((state) => state.LoginReducer);
 
-  // STABLE user ID - use useMemo to prevent recalculation
-  // CRITICAL FIX: Check localStorage user object if Redux state is not populated
   const myUserId = useMemo(() => {
-    // First try from Redux state
     let userId =
       authState.user?.userId ||
       authState.user?.id ||
       authState.user?.ID ||
       authState.user?.UserId;
 
-    // If not in Redux, try localStorage
     if (!userId) {
       try {
         const storedUser = localStorage.getItem("user");
@@ -120,24 +114,23 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
       }
     }
 
-    // Fallback to hardcoded ID (for development)
     if (!userId) {
-      userId =
-        localStorage.getItem("userId") ||
-        "2952da01-2354-4f24-87d1-9481e11f6a77";
+      userId = localStorage.getItem("userId");
     }
 
-    // console.log("MessageChat - Resolved User ID:", userId);
     return userId;
   }, [authState.user]);
 
-  // STABLE token getter - use useCallback
-  // CRITICAL FIX: Always check localStorage for token
   const getToken = useCallback(() => {
-    const token = authState.token || localStorage.getItem("authToken");
-    // console.log("MessageChat - Token available:", token ? "Yes" : "No");
-    return token;
+    return authState.token || localStorage.getItem("authToken") || null;
   }, [authState.token]);
+
+  /**
+   * FIX: Derive a boolean that is only true when we KNOW the token exists.
+   * The SignalR effect uses this as a dependency so it won't run until auth
+   * is ready, eliminating the race condition that caused the intermittent 401.
+   */
+  const isAuthReady = useMemo(() => Boolean(getToken()), [getToken]);
 
   // Early return if drawer is open but no user is selected
   if (open && !selectedUser) {
@@ -160,14 +153,12 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
     );
   }
 
-  // Map server message to client format - STABLE with proper dependencies
   const mapServerMessage = useCallback(
     (msg) => {
       if (!msg) return null;
       const id = msg.id || msg.Id || msg.messageId || `${Date.now()}`;
       const senderId = msg.senderId || msg.SenderId || msg.sender || null;
-      const receiverId =
-        msg.receiverId || msg.ReceiverId || msg.receiver || null;
+      const receiverId = msg.receiverId || msg.ReceiverId || msg.receiver || null;
       const text = msg.text || msg.Text || msg.message || "";
       const timestamp =
         msg.timestampUtc ||
@@ -177,11 +168,8 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
       const isRead =
         typeof msg.isRead !== "undefined" ? msg.isRead : msg.IsRead || false;
 
-      // CRITICAL FIX: Properly identify sender by comparing GUIDs
       const isMySender =
         String(senderId).toLowerCase() === String(myUserId).toLowerCase();
-
-      // console.log("mapServerMessage - Message ID:", id, "| SenderId:", senderId, "| MyUserId:", myUserId, "| IsMine:", isMySender);
 
       return {
         id,
@@ -197,7 +185,6 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
     [myUserId],
   );
 
-  // CRITICAL FIX: Fetch history with proper dependencies
   const fetchHistory = useCallback(
     async ({ sessionId = null, withUserId = null } = {}) => {
       try {
@@ -207,8 +194,6 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         if (sessionId) url += `?sessionId=${encodeURIComponent(sessionId)}`;
         else if (withUserId)
           url += `?withUserId=${encodeURIComponent(withUserId)}`;
-
-        // console.log("Fetching history from:", url);
 
         const res = await fetch(url, {
           headers: {
@@ -224,8 +209,10 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         }
 
         const data = await res.json();
-        // console.log("History data received:", data);
-        const mapped = (data || []).map(mapServerMessage).filter(Boolean);
+
+        // Handle both { data: [...] } and plain [...] response shapes
+        const raw = Array.isArray(data) ? data : data?.data ?? [];
+        const mapped = raw.map(mapServerMessage).filter(Boolean);
         setMessages(mapped);
       } catch (err) {
         console.error("Failed to fetch chat history", err);
@@ -234,23 +221,16 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         setIsLoadingHistory(false);
       }
     },
-    [getToken, mapServerMessage], // Only depend on stable functions
+    [getToken, mapServerMessage],
   );
 
-  // Create stable handlers
   const handleReceiveMessage = useCallback(
     (msg) => {
-      // console.log("Handler: ReceiveMessage called", msg);
       const mapped = mapServerMessage(msg);
       if (!mapped) return;
 
-      // CRITICAL FIX: Better relevance check with proper GUID comparison
-      const msgSenderId = String(
-        msg.senderId || msg.SenderId || "",
-      ).toLowerCase();
-      const msgReceiverId = String(
-        msg.receiverId || msg.ReceiverId || "",
-      ).toLowerCase();
+      const msgSenderId = String(msg.senderId || msg.SenderId || "").toLowerCase();
+      const msgReceiverId = String(msg.receiverId || msg.ReceiverId || "").toLowerCase();
       const myUserIdLower = String(myUserId).toLowerCase();
       const chatPartnerIdLower = String(chatPartner?.id || "").toLowerCase();
 
@@ -258,32 +238,18 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         ? String(
             msg.skillExchangeSessionId || msg.SkillExchangeSessionId || "",
           ).toLowerCase() === String(currentSessionId).toLowerCase()
-        : (msgSenderId === chatPartnerIdLower &&
-            msgReceiverId === myUserIdLower) ||
-          (msgSenderId === myUserIdLower &&
-            msgReceiverId === chatPartnerIdLower);
-
-      // console.log("Is relevant message:", isRelevantMessage, {
-      //   msgSenderId,
-      //   msgReceiverId,
-      //   myUserId: myUserIdLower,
-      //   chatPartnerId: chatPartnerIdLower,
-      // });
+        : (msgSenderId === chatPartnerIdLower && msgReceiverId === myUserIdLower) ||
+          (msgSenderId === myUserIdLower && msgReceiverId === chatPartnerIdLower);
 
       if (isRelevantMessage) {
         setMessages((prev) => {
-          // CRITICAL FIX: Check duplicates more thoroughly
           const msgId = String(mapped.id).toLowerCase();
           const exists = prev.some(
             (m) =>
               String(m.id).toLowerCase() === msgId ||
               (m.raw?.id && String(m.raw.id).toLowerCase() === msgId),
           );
-          if (exists) {
-            // console.log("Message already exists, skipping duplicate");
-            return prev;
-          }
-          // console.log("Adding new message to state");
+          if (exists) return prev;
           return [...prev, mapped];
         });
       }
@@ -293,12 +259,10 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
 
   const handleMessageSent = useCallback(
     (msg) => {
-      // console.log("Handler: MessageSent called", msg);
       const mapped = mapServerMessage(msg);
       if (!mapped) return;
 
       setMessages((prev) => {
-        // Replace the first pending/temp message with the real one
         let replaced = false;
         const updated = prev.map((m) => {
           if (!replaced && m.isPending && m.text === mapped.text) {
@@ -307,26 +271,17 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
           }
           return m;
         });
-
-        // If we didn't replace any optimistic message, don't add it
-        // (it will come via ReceiveMessage for the sender too)
         return updated;
       });
     },
     [mapServerMessage],
   );
 
-  const handleConnected = useCallback(() => {
-    // console.log("Handler: Connected");
-  }, []);
-
-  const handleDisconnected = useCallback(() => {
-    // console.log("Handler: Disconnected", err);
-  }, []);
+  const handleConnected = useCallback(() => {}, []);
+  const handleDisconnected = useCallback(() => {}, []);
 
   const handleReconnected = useCallback(
     async () => {
-      // console.log("Handler: Reconnected - refetching history", connectionId);
       try {
         if (currentSessionId) {
           await fetchHistory({ sessionId: currentSessionId });
@@ -337,7 +292,7 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         console.error("Failed to refetch history on reconnect:", err);
       }
     },
-    [currentSessionId, chatPartner?.id, fetchHistory], // Now fetchHistory is stable
+    [currentSessionId, chatPartner?.id, fetchHistory],
   );
 
   const signalRHandlers = useMemo(
@@ -370,76 +325,57 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
     handlers: signalRHandlers,
   });
 
-  // CRITICAL FIX: Use chatPartner.id as dependency instead of chatPartner object
-  // This prevents re-running when chatPartner object reference changes
+  /**
+   * FIX: Added `isAuthReady` as a dependency.
+   * The effect will NOT run until both the drawer is open AND the auth token
+   * is confirmed to exist. This stops the race condition where the component
+   * mounts and immediately tries to negotiate SignalR before Redux/localStorage
+   * has finished restoring the token.
+   */
   useEffect(() => {
-    if (!open || !chatPartner?.id) return;
+    if (!open || !chatPartner?.id || !isAuthReady) return;
 
     let mounted = true;
-    let isInitialized = false; // Prevent double initialization
 
     (async () => {
-      if (isInitialized) return;
-      isInitialized = true;
-
       try {
-        // CRITICAL FIX: Verify token before attempting connection
-        const token = getToken();
-        if (!token) {
-          console.error(
-            "No auth token available. Cannot start SignalR connection.",
-          );
-          alert("Authentication required. Please login again.");
-          return;
-        }
-
-        console.log("Starting SignalR connection...");
         await start();
-        console.log("SignalR connection established successfully");
-
         if (!mounted) return;
 
-        // Join session if present
         if (currentSessionId) {
-          console.log("Joining session:", currentSessionId);
           await joinSession(currentSessionId);
         }
 
-        // Now fetch history after SignalR is connected
-        console.log("Fetching chat history...");
         if (currentSessionId) {
           await fetchHistory({ sessionId: currentSessionId });
         } else {
           await fetchHistory({ withUserId: chatPartner.id });
         }
-        console.log("Chat initialization complete");
       } catch (err) {
+        if (!mounted) return;
         console.error("SignalR setup error:", err);
         if (
           err.message?.includes("401") ||
           err.message?.includes("Unauthorized")
         ) {
-          alert("Authentication failed. Please login again.");
-        } else {
-          console.error("Failed to establish chat connection. Retrying...");
+          console.error("Authentication failed. Please login again.");
         }
       }
     })();
 
     return () => {
       mounted = false;
-      console.log("Cleanup: stopping SignalR");
       stop?.();
     };
   }, [
     open,
-    chatPartner?.id, // ONLY depend on the ID, not the whole object
+    chatPartner?.id,
     currentSessionId,
+    isAuthReady, // KEY FIX: re-run if/when auth becomes available
     start,
     stop,
     joinSession,
     fetchHistory,
-    getToken,
   ]);
 
   // Auto-scroll to bottom when messages change
@@ -460,16 +396,13 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
         return;
       }
 
-      // CRITICAL FIX: Check SignalR connection state before sending
       if (connectionState !== "connected") {
         alert(
           `Cannot send message: Connection is ${connectionState}. Please wait for connection to establish.`,
         );
-        console.error("SignalR not connected. Current state:", connectionState);
         return;
       }
 
-      // Optimistic UI
       const optimisticId = `temp-${Date.now()}-${Math.random()}`;
       const optimistic = {
         id: optimisticId,
@@ -487,21 +420,9 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
 
       (async () => {
         try {
-          // CRITICAL FIX: Send ONLY via SignalR to avoid duplicates
-          // SignalR will persist to DB and broadcast to receiver
-          console.log(
-            "Sending message via SignalR. Connection state:",
-            connectionState,
-          );
           await signalrSendMessage(chatPartner.id, text, currentSessionId);
-          console.log("Message sent successfully via SignalR");
-
-          // The MessageSent event will replace the optimistic message
-          // with the real one from the server
         } catch (err) {
           console.error("Send failed:", err);
-
-          // Remove optimistic message on error
           setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
 
           if (
@@ -510,9 +431,7 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
           ) {
             alert("Authentication failed. Please login again.");
           } else if (err.message?.includes("connection not started")) {
-            alert(
-              "Connection lost. Reconnecting... Please try again in a moment.",
-            );
+            alert("Connection lost. Please try again in a moment.");
           } else {
             alert(`Failed to send message: ${err.message || "Unknown error"}`);
           }
@@ -540,15 +459,13 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
           .filter(
             (m) =>
               m.raw &&
-              (m.raw.receiverId === myUserId ||
-                m.raw.ReceiverId === myUserId) &&
+              (m.raw.receiverId === myUserId || m.raw.ReceiverId === myUserId) &&
               !m.read,
           )
           .map((m) => m.id || m.raw.id || m.raw.Id)
           .filter(Boolean);
 
         if (unreadIds.length > 0) {
-          // console.log("Marking messages as read:", unreadIds);
           await markAsRead(unreadIds);
           setMessages((prev) =>
             prev.map((m) =>
@@ -556,9 +473,8 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
             ),
           );
         }
-        // eslint-disable-next-line no-unused-vars
-      } catch (e) {
-        // console.error("Failed to mark messages as read:", e);
+      } catch {
+        // silently ignore
       }
     })();
   }, [messages, markAsRead, myUserId]);
@@ -647,20 +563,33 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
           </Paper>
         </AppBar>
 
-        {/* Debug Panel */}
+        {/* Debug Panel (dev only) */}
         {process.env.NODE_ENV === "development" && (
           <Paper sx={{ m: 1, p: 1, bgcolor: "grey.100" }}>
             <Typography variant="caption" display="block">
-              {/* Debug: User ID: {myUserId} | Token:{" "}
-              {getToken() ? "Present" : "Missing"} | Connection:{" "} */}
-              {connectionState} | Messages: {messages.length}
+              {connectionState} | Messages: {messages.length} | Auth:{" "}
+              {isAuthReady ? "Ready" : "Waiting..."}
             </Typography>
           </Paper>
         )}
 
         {/* Messages area */}
         <Box sx={{ flex: 1, overflowY: "auto", p: 2 }}>
-          {isLoadingHistory ? (
+          {/* Show a waiting state if auth isn't ready yet */}
+          {!isAuthReady ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100%",
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                Authenticating...
+              </Typography>
+            </Box>
+          ) : isLoadingHistory ? (
             <Box
               sx={{
                 display: "flex",
@@ -759,7 +688,6 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
             bgcolor: "background.paper",
           }}
         >
-          {/* Connection Status Indicator */}
           {connectionState !== "connected" && (
             <Box sx={{ mb: 1 }}>
               <Chip
@@ -769,7 +697,9 @@ export default function MessageChat({ open, toggleDrawer, selectedUser }) {
                     ? "Connecting to chat..."
                     : connectionState === "error"
                       ? "Connection error - retrying..."
-                      : "Disconnected"
+                      : !isAuthReady
+                        ? "Authenticating..."
+                        : "Disconnected"
                 }
                 size="small"
                 color={
