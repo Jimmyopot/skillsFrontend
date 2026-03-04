@@ -124,7 +124,7 @@ const Navbar = () => {
 
   // Initialize SignalR connection for notifications
   const { start: startNotificationHub, stop: stopNotificationHub } = useSignalR({
-    hubUrl: `${config.VITE_BACKEND_URL}/hubs/notification`,
+    hubUrl: `${config.VITE_BACKEND_URL}/hubs/notifications`,
     getAccessToken: getToken,
     handlers: signalRHandlers,
   });
