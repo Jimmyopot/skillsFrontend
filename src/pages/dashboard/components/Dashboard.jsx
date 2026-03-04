@@ -36,6 +36,7 @@ import {
   searchUsersBySkillAndCountyAction,
   getSuggestedMatchesAction,
 } from "../../../common/state/CommonActions";
+import { clearSelectedChatFromNotification } from "../state/DashboardSlice";
 import { CATEGORY_ICONS } from "../../../common/CategoryIcons";
 import MessageChat from "./MessageChat";
 import Suggestedmatches from "./Suggestedmatches";
@@ -81,6 +82,10 @@ export default function Dashboard() {
     searchUsersBySkillAndCountyResp,
     getSuggestedMatchesResp,
   } = useSelector((state) => state.CommonReducer);
+
+  const { selectedChatFromNotification } = useSelector(
+    (state) => state.DashboardReducer
+  );
 
   // Transform API data to match component structure
   const SKILLS_DATABASE = useMemo(
@@ -156,6 +161,28 @@ export default function Dashboard() {
       );
     }
   }, [dispatch, user?.userId, user?.id]);
+
+  // Handle opening chat from notification
+  useEffect(() => {
+    if (selectedChatFromNotification) {
+      // TODO: Fetch user details using senderId from the notification
+      // For now, we'll need to create a user object from available data
+      // This is a placeholder - you may need to fetch full user details from an API
+      const userFromNotification = {
+        id: selectedChatFromNotification.senderId,
+        userId: selectedChatFromNotification.senderId,
+        // Add other required fields based on your API structure
+        name: "Chat User", // Placeholder
+        fullName: "Chat User", // Placeholder
+      };
+
+      setSelectedUser(userFromNotification);
+      setOpenDrawer(true);
+
+      // Clear the notification state after handling
+      dispatch(clearSelectedChatFromNotification());
+    }
+  }, [selectedChatFromNotification, dispatch]);
 
   // Update filtered users when API response changes
   useEffect(() => {

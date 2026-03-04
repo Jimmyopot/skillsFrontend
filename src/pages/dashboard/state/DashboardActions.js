@@ -63,3 +63,62 @@ export const getRatingStatsAction = createAsyncThunk(
 		}
 	}
 );
+
+export const getNotificationsAction = createAsyncThunk(
+	"dashboard/getNotifications",
+	async (userId, { rejectWithValue }) => {
+		try {
+			const token = localStorage.getItem("authToken");
+
+			if (!token) {
+				return rejectWithValue("Authentication token not found. Please login.");
+			}
+
+			const response = await axios.get(
+				`${config.apiUrl}notifications/getNotifications/${userId}`,
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			);
+
+			return response.data;
+		} catch (error) {
+			console.error("getNotificationsAction - Error:", error.response?.data || error.message);
+			return rejectWithValue(
+				error.response?.data || "Failed to fetch notifications"
+			);
+		}
+	}
+);
+
+export const markNotificationAsReadAction = createAsyncThunk(
+	"dashboard/markNotificationAsRead",
+	async (notificationId, { rejectWithValue }) => {
+		try {
+			const token = localStorage.getItem("authToken");
+
+			if (!token) {
+				return rejectWithValue("Authentication token not found. Please login.");
+			}
+
+			const response = await axios.patch(
+				`${config.apiUrl}notifications/${notificationId}/mark-read`,
+				{},
+				{
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			);
+
+			return response.data;
+		} catch (error) {
+			console.error("markNotificationAsReadAction - Error:", error.response?.data || error.message);
+			return rejectWithValue(
+				error.response?.data || "Failed to mark notification as read"
+			);
+		}
+	}
+);
